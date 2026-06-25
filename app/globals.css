@@ -1,26 +1,58 @@
 @import "tailwindcss";
 
+@theme {
+  /* The Ledger palette — an auditable instrument, not a hype site. */
+  --color-ink: #0b0e11;
+  --color-slate: #161b22;
+  --color-elevated: #1b222c;
+  --color-paper: #f2efe6;
+  --color-verdant: #34e6a8;
+  --color-vermilion: #ff5a47;
+  --color-muted: #7c8794;
+
+  --font-display: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, "SFMono-Regular", monospace;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Every number and hash is monospace — the data type is the brand. */
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* faint engineering grid behind hero sections */
+.grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.live-dot {
+  animation: flicker 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot {
+    animation: none;
+  }
 }
