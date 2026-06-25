@@ -1,6 +1,6 @@
-# Even — drops, decided fairly
+# NoScalp — drops, decided fairly
 
-Bots win roughly 80% of every hyped drop — PS5s, GPUs, sneakers, concert tickets — by being faster than humans and by faking thousands of accounts. Even is a drop platform where that doesn't work.
+Bots win roughly 80% of every hyped drop — PS5s, GPUs, sneakers, concert tickets — by being faster than humans and by faking thousands of accounts. NoScalp is a drop platform where that doesn't work.
 
 The idea is simple: stop fighting bots on their terms.
 
@@ -33,7 +33,7 @@ See [`lib/engine.ts`](lib/engine.ts) for the transactions and [`lib/db/migration
 
 ```bash
 npm install
-cp .env.example .env.local   # set EVEN_IDENTITY_SECRET; pick local or DSQL
+cp .env.example .env.local   # set NOSCALP_IDENTITY_SECRET; pick local or DSQL
 npm run db:migrate           # create tables
 npm run db:seed              # seed the demo PS5 drop
 npm run dev                  # http://localhost:3000

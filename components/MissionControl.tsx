@@ -111,7 +111,7 @@ export function MissionControl({ dropId }: { dropId: string }) {
   async function proveDedup() {
     setBusy("dedup");
     try {
-      const contact = `race-${Math.floor(performance.now())}@even.demo`;
+      const contact = `race-${Math.floor(performance.now())}@noscalp.demo`;
       const v = await jpost<{ identityHash: string }>("/api/verify", { contact });
       const both = await Promise.all([
         jpost<{ created: boolean }>("/api/entries", { dropId, identityHash: v.identityHash, region: "A" }),

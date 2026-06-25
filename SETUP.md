@@ -31,12 +31,12 @@ The principal you connect as needs `dsql:DbConnectAdmin` (admin user) on the clu
 In `.env.local`:
 
 ```bash
-EVEN_DB_MODE=dsql
+NOSCALP_DB_MODE=dsql
 DSQL_ENDPOINT_A=<cluster-id>.dsql.us-east-1.on.aws
 DSQL_ENDPOINT_B=<cluster-id>.dsql.us-east-2.on.aws   # omit for single-region
 DSQL_REGION_A=us-east-1
 DSQL_REGION_B=us-east-2
-EVEN_IDENTITY_SECRET=<random string>
+NOSCALP_IDENTITY_SECRET=<random string>
 
 # local credentials (the standard AWS chain)
 AWS_ACCESS_KEY_ID=...
@@ -62,7 +62,7 @@ Avoid putting AWS keys in Vercel. Use OIDC federation:
 1. Vercel project → **Settings → Security → enable OIDC**. Note your issuer URL.
 2. AWS IAM → **Identity providers → Add provider → OpenID Connect**, using Vercel's issuer and audience.
 3. Create an IAM role trusting that provider (scope the trust to your Vercel team/project), attached to the policy in step 2.
-4. In Vercel env vars set the role to assume (e.g. `AWS_ROLE_ARN`) plus `DSQL_ENDPOINT_A/B`, `DSQL_REGION_A/B`, `EVEN_IDENTITY_SECRET`. The AWS SDK's provider chain picks up the Vercel OIDC token automatically.
+4. In Vercel env vars set the role to assume (e.g. `AWS_ROLE_ARN`) plus `DSQL_ENDPOINT_A/B`, `DSQL_REGION_A/B`, `NOSCALP_IDENTITY_SECRET`. The AWS SDK's provider chain picks up the Vercel OIDC token automatically.
 
 > All DB route handlers are pinned to the Node.js runtime (`export const runtime = "nodejs"`) because `pg` and the signer don't run on Edge.
 

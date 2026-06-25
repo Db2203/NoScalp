@@ -20,7 +20,7 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Even — Drops, decided fairly",
+  title: "NoScalp — Drops, decided fairly",
   description:
     "A fair-drop platform where bots can't win. Speed-neutral lottery, one entry per verified human, exactly-once allocation — built on Amazon Aurora DSQL.",
 };

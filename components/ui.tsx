@@ -141,7 +141,7 @@ export function Button({
 export function Logo({ className }: { className?: string }) {
   return (
     <span className={cn("font-display text-lg font-semibold tracking-tight", className)}>
-      even<span className="text-verdant">.</span>
+      noscalp<span className="text-verdant">.</span>
     </span>
   );
 }

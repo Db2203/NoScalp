@@ -1,5 +1,5 @@
 /**
- * End-to-end proof of the Even guarantees. Runs against whatever DB is
+ * End-to-end proof of the NoScalp guarantees. Runs against whatever DB is
  * configured (local Postgres or Aurora DSQL).
  *
  *   npm run test:engine
@@ -22,11 +22,11 @@ function check(name: string, cond: boolean, extra = "") {
 
 async function main() {
   const STOCK = 20;
-  console.log(`\nEven engine test (mode: ${dbMode}, stock: ${STOCK})\n`);
+  console.log(`\nNoScalp engine test (mode: ${dbMode}, stock: ${STOCK})\n`);
   await seedDemo(STOCK);
 
   // 1. dedup: same human enters 5 times -> 1 entry
-  const me = identityHash("dupe@test.even");
+  const me = identityHash("dupe@test.noscalp");
   let created = 0;
   for (let i = 0; i < 5; i++) {
     const r = await registerEntry({ dropId: DEMO_DROP_ID, identityHash: me, source: "human" });
@@ -35,7 +35,7 @@ async function main() {
   check("5 entries from one human collapse to 1", created === 1, `created=${created}`);
 
   // 2. concurrent same-human across regions A+B -> 1 entry
-  const racer = identityHash("racer@test.even");
+  const racer = identityHash("racer@test.noscalp");
   const both = await Promise.all([
     registerEntry({ dropId: DEMO_DROP_ID, identityHash: racer, region: "A", source: "human" }),
     registerEntry({ dropId: DEMO_DROP_ID, identityHash: racer, region: "B", source: "human" }),
@@ -45,7 +45,7 @@ async function main() {
   // 3. a pool of real humans + a bot flood
   const HUMANS = 30;
   for (let i = 0; i < HUMANS; i++) {
-    await registerEntry({ dropId: DEMO_DROP_ID, identityHash: identityHash(`human-${i}@test.even`), source: "human" });
+    await registerEntry({ dropId: DEMO_DROP_ID, identityHash: identityHash(`human-${i}@test.noscalp`), source: "human" });
   }
   const flood = await floodBots({ dropId: DEMO_DROP_ID, attempts: 4000, distinct: 200 });
   check("bot flood inserts only distinct identities", flood.inserted === 200, `inserted=${flood.inserted}`);
@@ -66,8 +66,8 @@ async function main() {
   check("every allocated unit is unique", dupUnits.rowCount === 0);
 
   // 6. claim + idempotent double-claim
-  const winnerHash = identityHash("dupe@test.even");
-  const winner = await verifyIdentity("dupe@test.even");
+  const winnerHash = identityHash("dupe@test.noscalp");
+  const winner = await verifyIdentity("dupe@test.noscalp");
   const st = await getIdentityStatus(DEMO_DROP_ID, winner.identityId, "A");
   if (st?.entryStatus === "won" && st.allocationId) {
     const c1 = await claimUnit({ allocationId: st.allocationId, identityId: winner.identityId, idempotencyKey: `${st.allocationId}:${winner.identityId}` });

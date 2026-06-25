@@ -11,7 +11,7 @@ import {
 } from "./ids";
 
 /**
- * The Even engine. Every guarantee lives here:
+ * The NoScalp engine. Every guarantee lives here:
  *  - one verified human  -> identity_index (hash is the PK)
  *  - one entry per human  -> entries.id = uuidv5(drop + hash)
  *  - exactly-once allocation / zero oversell -> one row per unit, guarded updates
@@ -138,7 +138,7 @@ export async function floodBots(args: {
   const distinct = args.distinct ?? Math.max(1, Math.round(attempts * 0.06));
 
   const hashes = Array.from({ length: distinct }, (_, i) =>
-    hashContact(`bot-${args.dropId.slice(0, 8)}-${i}@flood.even`),
+    hashContact(`bot-${args.dropId.slice(0, 8)}-${i}@flood.noscalp`),
   );
 
   let inserted = 0;

@@ -42,7 +42,7 @@ type Status = {
 
 type Identity = { identityId: string; identityHash: string; contact: string; displayName?: string };
 
-const STORE_KEY = "even:identity";
+const STORE_KEY = "noscalp:identity";
 
 export function DropExperience({ dropId }: { dropId: string }) {
   const [drop, setDrop] = useState<Drop | null>(null);

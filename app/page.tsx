@@ -33,7 +33,7 @@ export default function Home() {
             Drops, decided <span className="text-verdant">fairly</span>.
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted">
-            Even is a fair-drop platform where scalper bots can&apos;t win — by speed or by faking
+            NoScalp is a fair-drop platform where scalper bots can&apos;t win — by speed or by faking
             accounts. We make scalping mathematically pointless, and prove it on screen.
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-3">
@@ -51,7 +51,7 @@ export default function Home() {
       </section>
 
       <section id="how" className="mx-auto w-full max-w-6xl px-5 py-16">
-        <SectionLabel>How Even is different</SectionLabel>
+        <SectionLabel>How NoScalp is different</SectionLabel>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
           {pillars.map((p) => (
             <Panel key={p.n} className="p-6">

@@ -15,7 +15,7 @@ import { DsqlSigner } from "@aws-sdk/dsql-signer";
 export type RegionKey = "A" | "B";
 
 const MODE: "dsql" | "local" =
-  (process.env.EVEN_DB_MODE as "dsql" | "local") ||
+  (process.env.NOSCALP_DB_MODE as "dsql" | "local") ||
   (process.env.DATABASE_URL ? "local" : "dsql");
 
 export const regionLabels: Record<RegionKey, string> = {
@@ -87,10 +87,10 @@ function build(): Record<RegionKey, Pool> {
 }
 
 // Reuse across hot reloads (dev) and warm serverless invocations (prod).
-const g = globalThis as unknown as { __evenPools?: Record<RegionKey, Pool> };
+const g = globalThis as unknown as { __noscalpPools?: Record<RegionKey, Pool> };
 function pools(): Record<RegionKey, Pool> {
-  if (!g.__evenPools) g.__evenPools = build();
-  return g.__evenPools;
+  if (!g.__noscalpPools) g.__noscalpPools = build();
+  return g.__noscalpPools;
 }
 
 export const dbMode = MODE;

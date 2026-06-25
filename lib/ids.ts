@@ -61,7 +61,7 @@ export function normalizeContact(raw: string): string {
 }
 
 export function identityHash(rawContact: string): string {
-  const secret = process.env.EVEN_IDENTITY_SECRET || "dev-only-insecure-secret";
+  const secret = process.env.NOSCALP_IDENTITY_SECRET || "dev-only-insecure-secret";
   return createHmac("sha256", secret)
     .update(normalizeContact(rawContact))
     .digest("hex");
