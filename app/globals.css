@@ -1,8 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  /* Off-black canvas, surfaces stepping up ~6% lightness. Brand is indigo;
-     green/red are SEMANTIC STATE only (verified / blocked), never decoration. */
+  /* ── Storefront (light, the default) ── */
+  --color-canvas: #f7f6f3; /* warm off-white */
+  --color-fg: #15130f; /* warm near-black */
+  --color-card: #ffffff;
+  --color-soft: #efece6;
+  --color-mute: #6b6862;
+  --color-edge: rgba(0, 0, 0, 0.1);
+  --color-accent: #1f4dff; /* electric blue — the one accent */
+  --color-accent-ink: #0d2bbd;
+  --color-ok: #1f9d57;
+  --color-warn: #b4530f;
+
+  /* ── Engine view (dark, kept from before) ── */
   --color-ink: #0b0d12;
   --color-surface: #13161d;
   --color-elevated: #1b1f28;
@@ -21,31 +32,45 @@
   --ease-out-cubic: cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-:root {
-  color-scheme: dark;
-}
-
 body {
-  background: var(--color-ink);
-  color: var(--color-paper);
+  background: var(--color-canvas);
+  color: var(--color-fg);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
+.display {
+  font-family: var(--font-display);
+}
+
 *:focus-visible {
-  outline: 2px solid var(--color-brand);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
   border-radius: 3px;
 }
 
-/* Numbers, hashes, serials — tabular so live counters never reflow. */
+/* premium card lift on hover */
+.lift {
+  transition:
+    transform 320ms var(--ease-out-cubic),
+    box-shadow 320ms var(--ease-out-cubic);
+}
+.lift:hover {
+  transform: translateY(-4px);
+}
+
+/* subtle scrim for imagery */
+.scrim {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0) 55%);
+}
+
+/* ── Engine-only helpers (dark) ── */
 .mono {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }
-
 .eyebrow {
   font-family: var(--font-mono);
   text-transform: uppercase;
@@ -53,24 +78,9 @@ body {
   font-size: 0.6875rem;
   color: var(--color-muted);
 }
-
-/* The one texture flourish: a soft brand glow behind the hero. */
 .brand-glow {
-  background: radial-gradient(
-    ellipse 55% 45% at 50% 0%,
-    rgba(124, 108, 255, 0.16),
-    transparent 70%
-  );
+  background: radial-gradient(ellipse 55% 45% at 50% 0%, rgba(124, 108, 255, 0.16), transparent 70%);
 }
-
-.dotgrid {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 22px 22px;
-  -webkit-mask-image: radial-gradient(ellipse at 50% 0%, black 35%, transparent 80%);
-  mask-image: radial-gradient(ellipse at 50% 0%, black 35%, transparent 80%);
-}
-
-/* cursor-follow spotlight on dark cards (JS sets --mx/--my; falls back centered) */
 .spotlight {
   position: relative;
 }
@@ -79,11 +89,7 @@ body {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: radial-gradient(
-    240px circle at var(--mx, 50%) var(--my, 50%),
-    rgba(124, 108, 255, 0.1),
-    transparent 60%
-  );
+  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), rgba(124, 108, 255, 0.1), transparent 60%);
   opacity: 0;
   transition: opacity 300ms var(--ease-out-cubic);
   pointer-events: none;
@@ -91,8 +97,6 @@ body {
 .spotlight:hover::before {
   opacity: 1;
 }
-
-/* pulsing LIVE dot (mint) */
 @keyframes pulsering {
   0% { box-shadow: 0 0 0 0 rgba(70, 224, 160, 0.5); }
   70%, 100% { box-shadow: 0 0 0 6px rgba(70, 224, 160, 0); }
@@ -100,8 +104,6 @@ body {
 .live-dot {
   animation: pulsering 1.8s var(--ease-out-cubic) infinite;
 }
-
-/* flash a value when it changes */
 @keyframes flash {
   0% { color: var(--color-brand-soft); }
   100% { color: inherit; }
@@ -111,11 +113,10 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .lift,
   .live-dot,
   .flash {
     animation: none !important;
-  }
-  * {
-    scroll-behavior: auto !important;
+    transition: none !important;
   }
 }

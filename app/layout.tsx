@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Inter, JetBrains_Mono } from "next/font/google";
+import { Archivo, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const display = Bricolage_Grotesque({
+const display = Archivo({
   variable: "--font-display",
   subsets: ["latin"],
 });
@@ -20,7 +20,7 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "NoScalp — Drops, decided fairly",
   description:
-    "A fair-drop platform where bots can't win. Speed-neutral lottery, one entry per verified human, exactly-once allocation — built on Amazon Aurora DSQL.",
+    "Limited drops without the bots. Every release is a fair lottery: one entry per verified person, winners drawn at random, never oversold.",
 };
 
 export default function RootLayout({
@@ -33,7 +33,7 @@ export default function RootLayout({
       lang="en"
       className={`${display.variable} ${sans.variable} ${mono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-ink text-paper">{children}</body>
+      <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );
 }
