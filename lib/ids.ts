@@ -13,11 +13,11 @@ import { v4 as uuidv4, v5 as uuidv5 } from "uuid";
  */
 
 // Fixed namespaces (any constant UUIDs — these never change once chosen).
-const NS_ENTRY = "6f9619ff-8b86-d011-b42d-00cf4fc964ff";
-const NS_SLOT = "7f9619ff-8b86-d011-b42d-00cf4fc964ff";
-const NS_IDENTITY = "9f9619ff-8b86-d011-b42d-00cf4fc964ff";
-const NS_ORDER = "af9619ff-8b86-d011-b42d-00cf4fc964ff";
-const NS_ALLOC = "bf9619ff-8b86-d011-b42d-00cf4fc964ff";
+const NS_ENTRY = "6f9619ff-8b86-5011-b42d-00cf4fc964ff";
+const NS_SLOT = "7f9619ff-8b86-5011-b42d-00cf4fc964ff";
+const NS_IDENTITY = "9f9619ff-8b86-5011-b42d-00cf4fc964ff";
+const NS_ORDER = "af9619ff-8b86-5011-b42d-00cf4fc964ff";
+const NS_ALLOC = "bf9619ff-8b86-5011-b42d-00cf4fc964ff";
 
 /** One lottery entry per (drop, verified human). Duplicate => same id => no-op. */
 export function entryId(dropId: string, identityHash: string): string {
