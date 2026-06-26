@@ -1,7 +1,8 @@
-import type { PoolClient } from "pg";
+import type { Pool, PoolClient } from "pg";
 import { pool, type RegionKey } from "./db/pools";
 import { withTxn } from "./db/withRetry";
 import {
+  allocationIdFor,
   entryId,
   identityHash as hashContact,
   identityIdFor,
@@ -133,9 +134,16 @@ export async function floodBots(args: {
 }): Promise<{ attempts: number; distinct: number; inserted: number; blocked: number; region: RegionKey }> {
   const region = args.region ?? "A";
   const attempts = args.attempts ?? 5000;
-  // a small fraction of attempts come from genuinely distinct (fake) identities;
-  // the overwhelming majority are the same bots retrying = duplicate humans.
-  const distinct = args.distinct ?? Math.max(1, Math.round(attempts * 0.06));
+  // a fraction of attempts come from genuinely distinct (fake) identities; the
+  // rest are the same bots retrying = duplicate humans. Never exceed `attempts`.
+  const distinct = Math.min(args.distinct ?? Math.max(1, Math.round(attempts * 0.06)), attempts);
+
+  // only meaningful while registration is open (don't pollute a drawn drop)
+  const status = (await pool(region).query(`SELECT status FROM drops WHERE id = $1`, [args.dropId])).rows[0]?.status as
+    | string
+    | undefined;
+  if (!status) throw new EngineError("not_found", "drop not found");
+  if (status !== "registration_open") throw new EngineError("closed", "registration is not open for this drop");
 
   const hashes = Array.from({ length: distinct }, (_, i) =>
     hashContact(`bot-${args.dropId.slice(0, 8)}-${i}@flood.noscalp`),
@@ -147,13 +155,11 @@ export async function floodBots(args: {
     const chunk = hashes.slice(start, start + BATCH);
     inserted += await withTxn(pool(region), async (c) => {
       const values: string[] = [];
-      const params: unknown[] = [args.dropId];
+      const params: unknown[] = [args.dropId, region];
       chunk.forEach((h, i) => {
-        const id = entryId(args.dropId, h);
-        const identityId = identityIdFor(h);
-        const base = i * 3 + 2; // $2, $3, $4 ...
-        values.push(`($${base}, $1, $${base + 1}, $${base + 2}, '${region}', 'bot')`);
-        params.push(id, identityId, h);
+        const base = i * 3 + 3; // $3, $4, $5 ...
+        values.push(`($${base}, $1, $${base + 1}, $${base + 2}, $2, 'bot')`);
+        params.push(entryId(args.dropId, h), identityIdFor(h), h);
       });
       const res = await c.query(
         `INSERT INTO entries (id, drop_id, identity_id, identity_hash, region_written, source)
@@ -165,11 +171,25 @@ export async function floodBots(args: {
     });
   }
 
-  await withTxn(pool(region), (c) =>
-    audit(c, args.dropId, "bot_flood", region, { attempts, distinct, inserted }),
-  );
-
+  await withTxn(pool(region), (c) => audit(c, args.dropId, "bot_flood", region, { attempts, distinct, inserted }));
   return { attempts, distinct, inserted, blocked: attempts - inserted, region };
+}
+
+/** Current standings for a drop, readable from a pool or inside a transaction. */
+async function standings(
+  q: Pool | PoolClient,
+  dropId: string,
+): Promise<{ winners: number; units: number; entries: number }> {
+  const r = (
+    await q.query(
+      `SELECT
+         (SELECT count(*) FROM drop_units WHERE drop_id = $1 AND state IN ('allocated','claimed'))::int AS winners,
+         (SELECT count(*) FROM drop_units WHERE drop_id = $1)::int AS units,
+         (SELECT count(*) FROM entries WHERE drop_id = $1)::int AS entries`,
+      [dropId],
+    )
+  ).rows[0];
+  return { winners: r.winners, units: r.units, entries: r.entries };
 }
 
 /**
@@ -182,55 +202,66 @@ export async function floodBots(args: {
 export async function runDraw(args: {
   dropId: string;
   region?: RegionKey;
-}): Promise<{ winners: number; units: number; entries: number; seed: string }> {
+}): Promise<{ winners: number; units: number; entries: number; seed: string; alreadyDrawn: boolean }> {
   const region = args.region ?? "A";
   const db = pool(region);
+  const newSeed = newId();
 
-  // 1. close + seed (idempotent: only acts while still open)
-  const drop = await withTxn(db, async (c) => {
-    const cur = (
-      await c.query(`SELECT id, status, draw_seed, claim_window_secs FROM drops WHERE id = $1`, [args.dropId])
-    ).rows[0] as { id: string; status: string; draw_seed: string | null; claim_window_secs: number } | undefined;
-    if (!cur) throw new EngineError("not_found", "drop not found");
-    if (cur.status === "registration_open") {
-      const seed = newId();
-      await c.query(
-        `UPDATE drops SET status = 'drawing', draw_seed = $2 WHERE id = $1 AND status = 'registration_open'`,
-        [args.dropId, seed],
-      );
-      await audit(c, args.dropId, "draw_started", region, { seed });
-      return { ...cur, draw_seed: seed };
+  // 1. LEADER GATE. Only the transaction that actually flips
+  //    registration_open -> drawing performs the draw. A concurrent call (double
+  //    click, second region) or a re-run on a finished drop just returns the
+  //    current standings — so an entry can never be allocated twice.
+  const lead = await withTxn(db, async (c) => {
+    const claimed = await c.query(
+      `UPDATE drops SET status = 'drawing', draw_seed = $2
+       WHERE id = $1 AND status = 'registration_open'
+       RETURNING claim_window_secs`,
+      [args.dropId, newSeed],
+    );
+    if ((claimed.rowCount ?? 0) > 0) {
+      await audit(c, args.dropId, "draw_started", region, { seed: newSeed });
+      return { isLeader: true, seed: newSeed, claimWindow: claimed.rows[0].claim_window_secs as number };
     }
-    return cur;
+    const cur = (await c.query(`SELECT status, draw_seed FROM drops WHERE id = $1`, [args.dropId])).rows[0] as
+      | { status: string; draw_seed: string | null }
+      | undefined;
+    if (!cur) throw new EngineError("not_found", "drop not found");
+    return { isLeader: false, seed: cur.draw_seed ?? newSeed, claimWindow: 600 };
   });
-  const seed = drop.draw_seed ?? newId();
-  const claimWindow = drop.claim_window_secs ?? 600;
 
-  // 2. assign ranks in batches (UPDATE has no LIMIT in pg -> use an id subquery)
+  if (!lead.isLeader) {
+    return { ...(await standings(db, args.dropId)), seed: lead.seed, alreadyDrawn: true };
+  }
+  const seed = lead.seed;
+  const claimWindow = lead.claimWindow ?? 600;
+
+  // 2. assign deterministic ranks (UPDATE has no LIMIT in pg -> id subquery)
   for (;;) {
-    const n = await withTxn(db, async (c) => {
-      const res = await c.query(
-        `UPDATE entries SET lottery_rank = md5(id::text || $2)
-         WHERE id IN (
-           SELECT id FROM entries
-           WHERE drop_id = $1 AND status = 'registered' AND lottery_rank IS NULL
-           ORDER BY id LIMIT 2000
-         )`,
-        [args.dropId, seed],
-      );
-      return res.rowCount ?? 0;
-    });
+    const n = await withTxn(
+      db,
+      async (c) =>
+        (
+          await c.query(
+            `UPDATE entries SET lottery_rank = md5(id::text || $2)
+             WHERE id IN (
+               SELECT id FROM entries
+               WHERE drop_id = $1 AND status = 'registered' AND lottery_rank IS NULL
+               ORDER BY id LIMIT 2000
+             )`,
+            [args.dropId, seed],
+          )
+        ).rowCount ?? 0,
+    );
     if (n === 0) break;
   }
 
-  // 3. allocate best-ranked entries to free units
+  // 3. allocate best-ranked entries to free units, exactly once
   let winners = 0;
   for (;;) {
     const placed = await withTxn(db, async (c) => {
       const units = (
         await c.query(
-          `SELECT unit_no FROM drop_units
-           WHERE drop_id = $1 AND state = 'available' ORDER BY unit_no LIMIT 500`,
+          `SELECT unit_no FROM drop_units WHERE drop_id = $1 AND state = 'available' ORDER BY unit_no LIMIT 500`,
           [args.dropId],
         )
       ).rows as { unit_no: number }[];
@@ -240,63 +271,62 @@ export async function runDraw(args: {
         await c.query(
           `SELECT id, identity_id FROM entries
            WHERE drop_id = $1 AND status = 'registered'
-           ORDER BY lottery_rank ASC LIMIT $2`,
+           ORDER BY lottery_rank ASC, id ASC LIMIT $2`,
           [args.dropId, units.length],
         )
       ).rows as { id: string; identity_id: string }[];
       if (cand.length === 0) return 0;
 
-      const n = Math.min(units.length, cand.length);
-      for (let i = 0; i < n; i++) {
+      let placedHere = 0;
+      for (let i = 0; i < Math.min(units.length, cand.length); i++) {
         const unitNo = units[i].unit_no;
         const w = cand[i];
-        const upd = await c.query(
+        // claim the entry first (guarded) so it can never win two units
+        const won = await c.query(`UPDATE entries SET status = 'won' WHERE id = $1 AND status = 'registered'`, [w.id]);
+        if ((won.rowCount ?? 0) === 0) continue;
+        await c.query(
           `UPDATE drop_units SET state = 'allocated', allocated_to = $3, allocated_at = now()
            WHERE drop_id = $1 AND unit_no = $2 AND state = 'available'`,
           [args.dropId, unitNo, w.id],
         );
-        if ((upd.rowCount ?? 0) === 0) continue; // already taken (won't happen single-leader)
+        // deterministic id per unit => retries can't create duplicate allocations
         await c.query(
           `INSERT INTO allocations (id, drop_id, entry_id, identity_id, unit_no, claim_close_at)
-           VALUES (gen_random_uuid(), $1, $2, $3, $4, now() + ($5 || ' seconds')::interval)`,
-          [args.dropId, w.id, w.identity_id, unitNo, claimWindow],
+           VALUES ($1, $2, $3, $4, $5, now() + ($6::text || ' seconds')::interval)
+           ON CONFLICT (id) DO NOTHING`,
+          [allocationIdFor(args.dropId, unitNo), args.dropId, w.id, w.identity_id, unitNo, claimWindow],
         );
-        await c.query(`UPDATE entries SET status = 'won' WHERE id = $1`, [w.id]);
+        placedHere++;
       }
-      return n;
+      return placedHere;
     });
     if (placed === 0) break;
     winners += placed;
   }
 
-  // 4. losers + finalize
+  // 4. mark the rest as lost, then finalize
   for (;;) {
-    const n = await withTxn(db, async (c) => {
-      const res = await c.query(
-        `UPDATE entries SET status = 'lost'
-         WHERE id IN (
-           SELECT id FROM entries WHERE drop_id = $1 AND status = 'registered' ORDER BY id LIMIT 2000
-         )`,
-        [args.dropId],
-      );
-      return res.rowCount ?? 0;
-    });
+    const n = await withTxn(
+      db,
+      async (c) =>
+        (
+          await c.query(
+            `UPDATE entries SET status = 'lost'
+             WHERE id IN (SELECT id FROM entries WHERE drop_id = $1 AND status = 'registered' ORDER BY id LIMIT 2000)`,
+            [args.dropId],
+          )
+        ).rowCount ?? 0,
+    );
     if (n === 0) break;
   }
 
   const totals = await withTxn(db, async (c) => {
-    const units = (await c.query(`SELECT count(*)::int AS c FROM drop_units WHERE drop_id = $1`, [args.dropId]))
-      .rows[0].c as number;
-    const entries = (await c.query(`SELECT count(*)::int AS c FROM entries WHERE drop_id = $1`, [args.dropId]))
-      .rows[0].c as number;
-    await c.query(`UPDATE drops SET status = 'drawn' WHERE id = $1 AND status IN ('drawing','registration_open')`, [
-      args.dropId,
-    ]);
-    await audit(c, args.dropId, "draw_completed", region, { winners, units, entries, seed });
-    return { units, entries };
+    await c.query(`UPDATE drops SET status = 'drawn' WHERE id = $1 AND status = 'drawing'`, [args.dropId]);
+    await audit(c, args.dropId, "draw_completed", region, { winners, seed });
+    return standings(c, args.dropId);
   });
 
-  return { winners, units: totals.units, entries: totals.entries, seed };
+  return { winners, units: totals.units, entries: totals.entries, seed, alreadyDrawn: false };
 }
 
 /** A winner claims their reserved unit. Atomic purchase-limit + exactly-once order. */
@@ -307,55 +337,54 @@ export async function claimUnit(args: {
   region?: RegionKey;
 }): Promise<{ orderId: string; unitNo: number; alreadyClaimed: boolean }> {
   const region = args.region ?? "B";
+  const orderId = orderIdFor(args.idempotencyKey);
   return withTxn(pool(region), async (c) => {
     const alloc = (
       await c.query(
-        `SELECT id, drop_id, unit_no, state, order_id, claim_close_at FROM allocations
-         WHERE id = $1 AND identity_id = $2`,
+        `SELECT id, drop_id, unit_no, state FROM allocations WHERE id = $1 AND identity_id = $2`,
         [args.allocationId, args.identityId],
       )
-    ).rows[0] as
-      | { id: string; drop_id: string; unit_no: number; state: string; order_id: string | null; claim_close_at: Date }
-      | undefined;
+    ).rows[0] as { id: string; drop_id: string; unit_no: number; state: string } | undefined;
     if (!alloc) throw new EngineError("not_found", "allocation not found for this identity");
-    if (alloc.state === "claimed" && alloc.order_id) {
-      return { orderId: alloc.order_id, unitNo: alloc.unit_no, alreadyClaimed: true };
-    }
-    if (new Date(alloc.claim_close_at).getTime() < Date.now()) {
-      throw new EngineError("expired", "claim window has closed");
-    }
 
     const drop = (
       await c.query(`SELECT per_user_limit, price_cents FROM drops WHERE id = $1`, [alloc.drop_id])
     ).rows[0] as { per_user_limit: number; price_cents: number };
 
-    const used = (
-      await c.query(`SELECT count(*)::int AS c FROM purchase_slots WHERE drop_id = $1 AND identity_id = $2`, [
-        alloc.drop_id,
-        args.identityId,
-      ])
-    ).rows[0].c as number;
-    if (used >= drop.per_user_limit) throw new EngineError("limit", "purchase limit reached");
-
-    const sId = slotId(alloc.drop_id, args.identityId, used);
-    const orderId = orderIdFor(args.idempotencyKey);
-
-    const slot = await c.query(
-      `INSERT INTO purchase_slots (id, drop_id, identity_id, slot_index, order_id)
-       VALUES ($1,$2,$3,$4,$5) ON CONFLICT (id) DO NOTHING RETURNING id`,
-      [sId, alloc.drop_id, args.identityId, used, orderId],
-    );
-    if ((slot.rowCount ?? 0) === 0) throw new EngineError("limit", "purchase limit reached");
-
-    await c.query(
+    // Order is the idempotency anchor: a replay (double click / retry) computes
+    // the same id, fails to insert, and returns the existing claim as success.
+    const ord = await c.query(
       `INSERT INTO orders (id, drop_id, identity_id, allocation_id, unit_no, amount_cents, idempotency_key)
-       VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING`,
+       VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING RETURNING id`,
       [orderId, alloc.drop_id, args.identityId, alloc.id, alloc.unit_no, drop.price_cents, args.idempotencyKey],
     );
-    await c.query(`UPDATE allocations SET state = 'claimed', order_id = $2 WHERE id = $1 AND state = 'reserved'`, [
-      alloc.id,
-      orderId,
-    ]);
+    if ((ord.rowCount ?? 0) === 0) {
+      return { orderId, unitNo: alloc.unit_no, alreadyClaimed: true };
+    }
+
+    // per-user limit without a counter: take the first free slot index
+    let acquired = false;
+    for (let idx = 0; idx < drop.per_user_limit; idx++) {
+      const r = await c.query(
+        `INSERT INTO purchase_slots (id, drop_id, identity_id, slot_index, order_id)
+         VALUES ($1,$2,$3,$4,$5) ON CONFLICT (id) DO NOTHING RETURNING id`,
+        [slotId(alloc.drop_id, args.identityId, idx), alloc.drop_id, args.identityId, idx, orderId],
+      );
+      if ((r.rowCount ?? 0) > 0) {
+        acquired = true;
+        break;
+      }
+    }
+    if (!acquired) throw new EngineError("limit", "purchase limit reached"); // rolls back the order insert
+
+    // the DB clock is the authority on the claim window
+    const claimed = await c.query(
+      `UPDATE allocations SET state = 'claimed', order_id = $2
+       WHERE id = $1 AND state = 'reserved' AND claim_close_at > now()`,
+      [alloc.id, orderId],
+    );
+    if ((claimed.rowCount ?? 0) === 0) throw new EngineError("expired", "claim window has closed");
+
     await c.query(
       `UPDATE drop_units SET state = 'claimed', claimed_by = $3, order_id = $2
        WHERE drop_id = $1 AND unit_no = $4 AND state = 'allocated'`,

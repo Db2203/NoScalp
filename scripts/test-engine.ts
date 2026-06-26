@@ -64,6 +64,11 @@ async function main() {
     [DEMO_DROP_ID],
   );
   check("every allocated unit is unique", dupUnits.rowCount === 0);
+  const dupEntries = await pool("A").query(
+    `SELECT entry_id, count(*) c FROM allocations WHERE drop_id=$1 GROUP BY entry_id HAVING count(*) > 1`,
+    [DEMO_DROP_ID],
+  );
+  check("no entry won more than one unit", dupEntries.rowCount === 0);
 
   // 6. claim + idempotent double-claim
   const winnerHash = identityHash("dupe@test.noscalp");
@@ -81,6 +86,23 @@ async function main() {
   const a = await getDropStats(DEMO_DROP_ID, "A");
   const b = await getDropStats(DEMO_DROP_ID, "B");
   check("region A and B agree on entry total", a.entriesTotal === b.entriesTotal, `${a.entriesTotal} vs ${b.entriesTotal}`);
+
+  // 8. concurrent draws must not double-allocate (the single-leader gate)
+  await seedDemo(10);
+  for (let i = 0; i < 25; i++) {
+    await registerEntry({ dropId: DEMO_DROP_ID, identityHash: identityHash(`cc-${i}@test.noscalp`), source: "human" });
+  }
+  const [d1, d2] = await Promise.all([runDraw({ dropId: DEMO_DROP_ID }), runDraw({ dropId: DEMO_DROP_ID })]);
+  const cc = await getDropStats(DEMO_DROP_ID, "A");
+  const ccDup = await pool("A").query(
+    `SELECT entry_id FROM allocations WHERE drop_id=$1 GROUP BY entry_id HAVING count(*) > 1`,
+    [DEMO_DROP_ID],
+  );
+  const ccWon = cc.units.allocated + cc.units.claimed;
+  check("concurrent draws: exactly one leader", (d1.alreadyDrawn ? 1 : 0) + (d2.alreadyDrawn ? 1 : 0) === 1, `d1=${d1.alreadyDrawn} d2=${d2.alreadyDrawn}`);
+  check("concurrent draws: no entry double-allocated", ccDup.rowCount === 0);
+  check("concurrent draws: zero oversold", ccWon - cc.units.total === 0);
+  check("concurrent draws: exactly stock winners", ccWon === 10, `won=${ccWon}`);
 
   console.log(`\n${failures === 0 ? "ALL CHECKS PASSED ✓" : `${failures} CHECK(S) FAILED ✗`}\n`);
   await pool("A").end();
