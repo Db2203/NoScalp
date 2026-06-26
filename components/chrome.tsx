@@ -1,21 +1,28 @@
 import Link from "next/link";
-import { Logo } from "./ui";
+import { Button, Logo } from "./ui";
+import { DEMO_DROP_ID } from "@/lib/constants";
 
 export function Nav() {
   return (
-    <header className="sticky top-0 z-30 border-b border-white/10 bg-ink/80 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5">
+    <header className="sticky top-0 z-30 border-b border-line bg-ink/70 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-[1140px] items-center justify-between px-5">
         <Link href="/" className="flex items-center">
           <Logo />
         </Link>
-        <nav className="mono flex items-center gap-6 text-xs uppercase tracking-wider text-muted">
-          <Link href="/#how" className="transition-colors hover:text-paper">
+        <nav className="hidden items-center gap-8 text-sm text-muted sm:flex">
+          <Link href="/#how" className="transition-colors duration-200 ease-out-cubic hover:text-paper">
             How it works
           </Link>
-          <Link href="/control" className="transition-colors hover:text-paper">
+          <Link href="/#proof" className="transition-colors duration-200 ease-out-cubic hover:text-paper">
+            Why it&apos;s fair
+          </Link>
+          <Link href="/control" className="transition-colors duration-200 ease-out-cubic hover:text-paper">
             Mission Control
           </Link>
         </nav>
+        <Button href={`/drops/${DEMO_DROP_ID}`} className="hidden sm:inline-flex">
+          Enter the drop
+        </Button>
       </div>
     </header>
   );
@@ -23,12 +30,10 @@ export function Nav() {
 
 export function Footer() {
   return (
-    <footer className="mt-auto border-t border-white/10">
-      <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-8 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
+    <footer className="mt-auto border-t border-line">
+      <div className="mx-auto flex max-w-[1140px] flex-col gap-3 px-5 py-10 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
         <Logo className="text-base" />
-        <p className="mono">
-          Next.js on Vercel · Amazon Aurora DSQL · multi-region, strongly consistent
-        </p>
+        <p className="mono">Next.js on Vercel · Amazon Aurora DSQL · multi-region, strongly consistent</p>
       </div>
     </footer>
   );

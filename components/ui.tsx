@@ -5,28 +5,29 @@ export function cn(...parts: Array<string | false | null | undefined>): string {
   return parts.filter(Boolean).join(" ");
 }
 
+export function Eyebrow({ children, className }: { children: ReactNode; className?: string }) {
+  return <div className={cn("eyebrow", className)}>{children}</div>;
+}
+
 export function Panel({
   children,
   className,
+  spotlight = false,
 }: {
   children: ReactNode;
   className?: string;
+  spotlight?: boolean;
 }) {
   return (
     <div
       className={cn(
-        "rounded-xl border border-white/10 bg-slate/70 backdrop-blur-sm",
+        "rounded-2xl border border-line bg-surface",
+        spotlight && "spotlight",
         className,
       )}
     >
       {children}
     </div>
-  );
-}
-
-export function SectionLabel({ children }: { children: ReactNode }) {
-  return (
-    <div className="mono text-[11px] uppercase tracking-[0.22em] text-muted">{children}</div>
   );
 }
 
@@ -38,19 +39,20 @@ export function Stat({
 }: {
   label: string;
   value: ReactNode;
-  tone?: "default" | "verdant" | "vermilion" | "muted";
+  tone?: "default" | "brand" | "verified" | "blocked" | "muted";
   sub?: ReactNode;
 }) {
   const toneClass = {
     default: "text-paper",
-    verdant: "text-verdant",
-    vermilion: "text-vermilion",
+    brand: "text-brand-soft",
+    verified: "text-verified",
+    blocked: "text-blocked",
     muted: "text-muted",
   }[tone];
   return (
-    <div className="flex flex-col gap-1">
-      <SectionLabel>{label}</SectionLabel>
-      <div className={cn("mono text-2xl font-medium tabular-nums sm:text-3xl", toneClass)}>{value}</div>
+    <div className="flex flex-col gap-1.5">
+      <Eyebrow>{label}</Eyebrow>
+      <div className={cn("mono text-3xl font-medium tabular-nums sm:text-4xl", toneClass)}>{value}</div>
       {sub ? <div className="text-xs text-muted">{sub}</div> : null}
     </div>
   );
@@ -61,18 +63,19 @@ export function Pill({
   tone = "muted",
 }: {
   children: ReactNode;
-  tone?: "verdant" | "vermilion" | "muted" | "paper";
+  tone?: "brand" | "verified" | "blocked" | "muted" | "paper";
 }) {
   const map = {
-    verdant: "border-verdant/30 bg-verdant/10 text-verdant",
-    vermilion: "border-vermilion/30 bg-vermilion/10 text-vermilion",
-    muted: "border-white/10 bg-white/5 text-muted",
-    paper: "border-white/15 bg-white/5 text-paper",
+    brand: "border-brand/30 bg-brand/10 text-brand-soft",
+    verified: "border-verified/30 bg-verified/10 text-verified",
+    blocked: "border-blocked/30 bg-blocked/10 text-blocked",
+    muted: "border-line bg-white/5 text-muted",
+    paper: "border-line bg-white/5 text-paper",
   }[tone];
   return (
     <span
       className={cn(
-        "mono inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] uppercase tracking-wider",
+        "mono inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] uppercase tracking-wider",
         map,
       )}
     >
@@ -81,13 +84,13 @@ export function Pill({
   );
 }
 
-export function RegionTag({ label, active = true }: { label: string; active?: boolean }) {
+export function LiveDot({ label, tone = "verified" }: { label?: ReactNode; tone?: "verified" | "muted" }) {
   return (
     <span className="mono inline-flex items-center gap-2 text-xs text-muted">
       <span
         className={cn(
-          "size-1.5 rounded-full",
-          active ? "bg-verdant live-dot" : "bg-muted/50",
+          "size-2 rounded-full",
+          tone === "verified" ? "bg-verified live-dot" : "bg-muted/50",
         )}
       />
       {label}
@@ -99,19 +102,22 @@ type ButtonProps = {
   children: ReactNode;
   onClick?: () => void;
   href?: string;
-  variant?: "primary" | "ghost" | "danger";
+  variant?: "primary" | "secondary" | "danger";
+  size?: "md" | "lg";
   disabled?: boolean;
   className?: string;
   type?: "button" | "submit";
 };
 
-const buttonBase =
-  "mono inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium uppercase tracking-wide transition-colors disabled:cursor-not-allowed disabled:opacity-50";
+const sizes = {
+  md: "px-4 py-2.5 text-sm",
+  lg: "px-6 py-3.5 text-base",
+};
 
-const buttonVariants = {
-  primary: "bg-verdant text-ink hover:bg-verdant/90",
-  ghost: "border border-white/15 bg-white/5 text-paper hover:bg-white/10",
-  danger: "bg-vermilion text-ink hover:bg-vermilion/90",
+const variants = {
+  primary: "bg-brand text-white hover:bg-brand-soft",
+  secondary: "border border-line bg-white/[0.04] text-paper hover:bg-white/[0.08]",
+  danger: "bg-blocked text-white hover:bg-blocked/85",
 };
 
 export function Button({
@@ -119,11 +125,17 @@ export function Button({
   onClick,
   href,
   variant = "primary",
+  size = "md",
   disabled,
   className,
   type = "button",
 }: ButtonProps) {
-  const cls = cn(buttonBase, buttonVariants[variant], className);
+  const cls = cn(
+    "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-colors duration-200 ease-out-cubic disabled:cursor-not-allowed disabled:opacity-50",
+    sizes[size],
+    variants[variant],
+    className,
+  );
   if (href) {
     return (
       <Link href={href} className={cls}>
@@ -141,7 +153,7 @@ export function Button({
 export function Logo({ className }: { className?: string }) {
   return (
     <span className={cn("font-display text-lg font-semibold tracking-tight", className)}>
-      noscalp<span className="text-verdant">.</span>
+      noscalp<span className="text-brand">.</span>
     </span>
   );
 }

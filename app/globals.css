@@ -1,18 +1,24 @@
 @import "tailwindcss";
 
 @theme {
-  /* The Ledger palette — an auditable instrument, not a hype site. */
-  --color-ink: #0b0e11;
-  --color-slate: #161b22;
-  --color-elevated: #1b222c;
-  --color-paper: #f2efe6;
-  --color-verdant: #34e6a8;
-  --color-vermilion: #ff5a47;
-  --color-muted: #7c8794;
+  /* Off-black canvas, surfaces stepping up ~6% lightness. Brand is indigo;
+     green/red are SEMANTIC STATE only (verified / blocked), never decoration. */
+  --color-ink: #0b0d12;
+  --color-surface: #13161d;
+  --color-elevated: #1b1f28;
+  --color-line: rgba(255, 255, 255, 0.08);
+  --color-brand: #7c6cff;
+  --color-brand-soft: #a99dff;
+  --color-paper: #eceef4;
+  --color-muted: #8b93a7;
+  --color-verified: #46e0a0;
+  --color-blocked: #ff6a5a;
 
   --font-display: var(--font-display), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-mono), ui-monospace, "SFMono-Regular", monospace;
+
+  --ease-out-cubic: cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 :root {
@@ -24,35 +30,92 @@ body {
   color: var(--color-paper);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* Every number and hash is monospace — the data type is the brand. */
+*:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* Numbers, hashes, serials — tabular so live counters never reflow. */
 .mono {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }
 
-/* faint engineering grid behind hero sections */
-.grid-bg {
-  background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-  background-size: 44px 44px;
-  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
-  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+.eyebrow {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  font-size: 0.6875rem;
+  color: var(--color-muted);
 }
 
-@keyframes flicker {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+/* The one texture flourish: a soft brand glow behind the hero. */
+.brand-glow {
+  background: radial-gradient(
+    ellipse 55% 45% at 50% 0%,
+    rgba(124, 108, 255, 0.16),
+    transparent 70%
+  );
+}
+
+.dotgrid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(ellipse at 50% 0%, black 35%, transparent 80%);
+  mask-image: radial-gradient(ellipse at 50% 0%, black 35%, transparent 80%);
+}
+
+/* cursor-follow spotlight on dark cards (JS sets --mx/--my; falls back centered) */
+.spotlight {
+  position: relative;
+}
+.spotlight::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    240px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(124, 108, 255, 0.1),
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 300ms var(--ease-out-cubic);
+  pointer-events: none;
+}
+.spotlight:hover::before {
+  opacity: 1;
+}
+
+/* pulsing LIVE dot (mint) */
+@keyframes pulsering {
+  0% { box-shadow: 0 0 0 0 rgba(70, 224, 160, 0.5); }
+  70%, 100% { box-shadow: 0 0 0 6px rgba(70, 224, 160, 0); }
 }
 .live-dot {
-  animation: flicker 1.4s ease-in-out infinite;
+  animation: pulsering 1.8s var(--ease-out-cubic) infinite;
+}
+
+/* flash a value when it changes */
+@keyframes flash {
+  0% { color: var(--color-brand-soft); }
+  100% { color: inherit; }
+}
+.flash {
+  animation: flash 600ms var(--ease-out-cubic);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .live-dot {
-    animation: none;
+  .live-dot,
+  .flash {
+    animation: none !important;
+  }
+  * {
+    scroll-behavior: auto !important;
   }
 }
