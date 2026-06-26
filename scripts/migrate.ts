@@ -13,7 +13,7 @@ import { ddlStatements } from "../lib/db/migrations";
 
 async function main() {
   const db = pool("A");
-  console.log(`Migrating (mode: ${dbMode})...`);
+  console.log(`Migrating (mode: ${dbMode()})...`);
 
   for (const { name, sql } of ddlStatements()) {
     try {
@@ -30,7 +30,7 @@ async function main() {
     }
   }
 
-  if (dbMode === "dsql") {
+  if (dbMode() === "dsql") {
     // CREATE INDEX ASYNC returns before the build finishes; give it a moment.
     console.log("Waiting for async indexes to build...");
     await new Promise((r) => setTimeout(r, 5000));

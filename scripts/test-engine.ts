@@ -22,7 +22,7 @@ function check(name: string, cond: boolean, extra = "") {
 
 async function main() {
   const STOCK = 20;
-  console.log(`\nNoScalp engine test (mode: ${dbMode}, stock: ${STOCK})\n`);
+  console.log(`\nNoScalp engine test (mode: ${dbMode()}, stock: ${STOCK})\n`);
   await seedDemo(STOCK);
 
   // 1. dedup: same human enters 5 times -> 1 entry

@@ -9,7 +9,7 @@ import { dbMode } from "./pools";
 export function ddlStatements(): { name: string; sql: string }[] {
   // DSQL requires CREATE INDEX ASYNC; plain Postgres doesn't understand ASYNC.
   const idx = (name: string, table: string, cols: string) =>
-    dbMode === "dsql"
+    dbMode() === "dsql"
       ? `CREATE INDEX ASYNC ${name} ON ${table} (${cols})`
       : `CREATE INDEX IF NOT EXISTS ${name} ON ${table} (${cols})`;
 

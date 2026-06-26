@@ -14,9 +14,11 @@ import { DsqlSigner } from "@aws-sdk/dsql-signer";
 
 export type RegionKey = "A" | "B";
 
-const MODE: "dsql" | "local" =
-  (process.env.NOSCALP_DB_MODE as "dsql" | "local") ||
-  (process.env.DATABASE_URL ? "local" : "dsql");
+// Resolved at call time (not import time) so standalone scripts have a chance to
+// load .env before the mode is decided — ESM hoists imports above loadEnv().
+export function dbMode(): "dsql" | "local" {
+  return (process.env.NOSCALP_DB_MODE as "dsql" | "local") || (process.env.DATABASE_URL ? "local" : "dsql");
+}
 
 export const regionLabels: Record<RegionKey, string> = {
   A: process.env.DSQL_REGION_A || "us-east-1",
@@ -71,15 +73,18 @@ function dsqlPool(region: RegionKey): Pool {
 }
 
 function localPool(): Pool {
+  const raw = process.env.DATABASE_URL;
+  // ignore the leftover template placeholder so discrete PG* env vars take over
+  const connectionString = raw && !raw.includes("REPLACE_WITH_YOUR_PASSWORD") ? raw : undefined;
   return new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString,
     max: 8,
     idleTimeoutMillis: 30_000,
   });
 }
 
 function build(): Record<RegionKey, Pool> {
-  if (MODE === "local") {
+  if (dbMode() === "local") {
     const shared = localPool();
     return { A: shared, B: shared };
   }
@@ -93,7 +98,6 @@ function pools(): Record<RegionKey, Pool> {
   return g.__noscalpPools;
 }
 
-export const dbMode = MODE;
 export function pool(region: RegionKey = "A"): Pool {
   return pools()[region];
 }
