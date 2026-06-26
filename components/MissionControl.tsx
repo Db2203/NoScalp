@@ -38,6 +38,14 @@ export function MissionControl({ dropId }: { dropId: string }) {
   const [storm, setStorm] = useState(false);
   const [drawn, setDrawn] = useState<{ winners: number; units: number } | null>(null);
   const [dedup, setDedup] = useState<{ created: number; rejected: number } | null>(null);
+  const [adminToken, setAdminToken] = useState("");
+
+  // Only needed when NOSCALP_ADMIN_TOKEN is set on a deployed instance.
+  useEffect(() => {
+    const t = setTimeout(() => setAdminToken(localStorage.getItem("noscalp_admin_token") ?? ""), 0);
+    return () => clearTimeout(t);
+  }, []);
+  const authHeaders = adminToken ? { "x-admin-token": adminToken } : undefined;
 
   const poll = useCallback(async () => {
     try {
@@ -65,7 +73,7 @@ export function MissionControl({ dropId }: { dropId: string }) {
     setBusy("flood");
     setStorm(true);
     try {
-      await jpost("/api/flood", { dropId, attempts: 5000, region: "A" });
+      await jpost("/api/flood", { dropId, attempts: 5000, region: "A" }, authHeaders);
       await poll();
     } finally {
       setTimeout(() => setStorm(false), 1400);
@@ -76,7 +84,7 @@ export function MissionControl({ dropId }: { dropId: string }) {
   async function draw() {
     setBusy("draw");
     try {
-      const r = await jpost<{ winners: number; units: number }>("/api/draw", { dropId, region: "A" });
+      const r = await jpost<{ winners: number; units: number }>("/api/draw", { dropId, region: "A" }, authHeaders);
       setDrawn({ winners: r.winners, units: r.units });
       await poll();
     } finally {
@@ -90,7 +98,7 @@ export function MissionControl({ dropId }: { dropId: string }) {
     setConsistency(null);
     setDedup(null);
     try {
-      await jpost("/api/reset", { stock: 100 });
+      await jpost("/api/reset", { stock: 100 }, authHeaders);
       await poll();
     } finally {
       setBusy(null);
@@ -100,7 +108,7 @@ export function MissionControl({ dropId }: { dropId: string }) {
   async function checkConsistency() {
     setBusy("consistency");
     try {
-      const r = await jget<Consistency>(`/api/consistency?dropId=${dropId}`);
+      const r = await jget<Consistency>(`/api/consistency?dropId=${dropId}`, authHeaders);
       setConsistency(r);
     } finally {
       setBusy(null);
@@ -200,6 +208,21 @@ export function MissionControl({ dropId }: { dropId: string }) {
           <Button onClick={proveDedup} variant="ghost" disabled={!!busy}>
             {busy === "dedup" ? "Racing…" : "👤 Same human, both regions"}
           </Button>
+        </div>
+
+        <div className="mt-4">
+          <label className="mono text-xs text-muted">
+            admin token — only needed on a deployed instance with NOSCALP_ADMIN_TOKEN set
+          </label>
+          <input
+            value={adminToken}
+            onChange={(e) => {
+              setAdminToken(e.target.value);
+              localStorage.setItem("noscalp_admin_token", e.target.value);
+            }}
+            placeholder="x-admin-token"
+            className="mono mt-1 block w-full max-w-xs rounded-lg border border-white/10 bg-ink px-3 py-2 text-sm outline-none focus:border-verdant/50"
+          />
         </div>
 
         <div className="mt-4 flex flex-wrap gap-3">

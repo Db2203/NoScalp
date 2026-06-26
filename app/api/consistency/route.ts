@@ -1,6 +1,6 @@
 import { pool, regionLabels } from "@/lib/db/pools";
 import { getDropStats } from "@/lib/queries";
-import { ok, fail, handleError } from "@/lib/http";
+import { ok, fail, handleError, requireAdmin } from "@/lib/http";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,6 +13,8 @@ export const dynamic = "force-dynamic";
  * passes; the real proof is on a multi-region DSQL cluster.)
  */
 export async function GET(req: Request) {
+  const denied = requireAdmin(req);
+  if (denied) return denied;
   try {
     const url = new URL(req.url);
     const dropId = url.searchParams.get("dropId");

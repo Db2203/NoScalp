@@ -9,10 +9,14 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    if (!body?.contact) return fail("bad_request", "contact required");
-    const r = await verifyIdentity(String(body.contact), {
-      displayName: body.displayName,
-      deviceFp: body.deviceFp,
+    const contact = String(body?.contact ?? "").trim();
+    if (!contact) return fail("bad_request", "contact required");
+    if (contact.length < 3 || contact.length > 200) return fail("bad_request", "contact looks invalid");
+    if (!contact.includes("@") && !/\d/.test(contact)) return fail("bad_request", "enter an email or phone number");
+    const displayName = body?.displayName ? String(body.displayName).slice(0, 80) : undefined;
+    const r = await verifyIdentity(contact, {
+      displayName,
+      deviceFp: body?.deviceFp ? String(body.deviceFp).slice(0, 200) : undefined,
       region: regionOf(body.region),
     });
     return ok(r);
