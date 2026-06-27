@@ -5,6 +5,7 @@ import { CategoryTiles } from "@/components/storefront/CategoryTiles";
 import { StoryBand } from "@/components/storefront/StoryBand";
 import { HowItWorks } from "@/components/storefront/HowItWorks";
 import { Newsletter } from "@/components/storefront/Newsletter";
+import { Reveal } from "@/components/storefront/Reveal";
 import { listDrops } from "@/lib/queries";
 import { toView, type DropView } from "@/lib/catalog";
 
@@ -24,11 +25,23 @@ export default async function Home() {
       <Nav />
       <main className="flex-1">
         {featured && <Hero d={featured} />}
-        {drops.length > 0 && <DropsGrid drops={drops} title="Dropping now" />}
-        <CategoryTiles />
-        <StoryBand />
-        <HowItWorks />
-        <Newsletter />
+        {drops.length > 0 && (
+          <Reveal>
+            <DropsGrid drops={drops} title="Dropping now" />
+          </Reveal>
+        )}
+        <Reveal>
+          <CategoryTiles />
+        </Reveal>
+        <Reveal>
+          <StoryBand />
+        </Reveal>
+        <Reveal>
+          <HowItWorks />
+        </Reveal>
+        <Reveal>
+          <Newsletter />
+        </Reveal>
       </main>
       <Footer />
     </>

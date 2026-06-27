@@ -8,10 +8,15 @@ export function ProductCard({ d }: { d: DropView }) {
   return (
     <Link href={`/drops/${d.id}`} className="group block">
       <Card lift className="overflow-hidden">
-        <div className="relative aspect-[4/5] bg-soft">
+        <div className="relative aspect-[4/5] overflow-hidden bg-soft">
           {d.image ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={d.image} alt={d.title} className="size-full object-cover" loading="lazy" />
+            <img
+              src={d.image}
+              alt={d.title}
+              loading="lazy"
+              className="size-full object-cover transition-transform duration-500 ease-out-cubic group-hover:scale-[1.05]"
+            />
           ) : (
             <div className="display grid size-full place-items-center text-2xl text-mute">{d.brand}</div>
           )}

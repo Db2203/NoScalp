@@ -38,7 +38,7 @@ export function Button({
   type = "button",
 }: ButtonProps) {
   const cls = cn(
-    "inline-flex items-center justify-center gap-2 rounded-full font-medium tracking-tight transition-colors duration-200 ease-out-cubic disabled:cursor-not-allowed disabled:opacity-50",
+    "inline-flex items-center justify-center gap-2 rounded-full font-medium tracking-tight transition-[background-color,transform] duration-200 ease-out-cubic active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50",
     sizes[size],
     variants[variant],
     className,
