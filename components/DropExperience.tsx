@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Countdown } from "./Countdown";
 import { Button, Chip, Container, cn } from "./storefront/ui";
+import { CountUp } from "./storefront/CountUp";
 import { jget, jpost } from "@/lib/client";
 import { money, num, shortHash } from "@/lib/format";
 import { toView, statusChip } from "@/lib/catalog";
@@ -232,7 +233,7 @@ export function DropExperience({ dropId }: { dropId: string }) {
 
           {isOpen && view && (
             <div className="mt-3 text-sm text-mute">
-              entry closes in <Countdown to={view.closeAt} /> · {num(stats?.humans ?? 0)} entered
+              entry closes in <Countdown to={view.closeAt} /> · <CountUp value={stats?.humans ?? 0} /> entered
             </div>
           )}
 

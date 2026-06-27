@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
-import { Container, Wordmark } from "./storefront/ui";
+import { useEffect, useState } from "react";
+import { Container, Wordmark, cn } from "./storefront/ui";
 
 const categories = [
   { label: "Sneakers", href: "/#drops" },
@@ -8,22 +11,62 @@ const categories = [
   { label: "Tech", href: "/#drops" },
 ];
 
+const marquee = [
+  "PS5 Restock — Live",
+  "Cobalt Retro High",
+  "Aurora World Tour",
+  "RTX 5090 Founders",
+  "Chrono Diver — Friday",
+  "One entry per human",
+];
+
 export function Nav() {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-40">
-      <div className="border-b border-edge bg-soft text-fg/70">
-        <Container className="flex h-9 items-center justify-center text-center text-[12px] tracking-wide">
-          Every drop is a fair lottery — one entry per person, winners drawn at random.
-        </Container>
+    <>
+      {/* now-dropping marquee */}
+      <div className="overflow-hidden border-b border-edge bg-soft">
+        <div className="marquee-track flex w-max items-center py-2">
+          {[...marquee, ...marquee].map((t, i) => (
+            <span key={i} className="flex items-center gap-6 pr-6 text-[11px] uppercase tracking-[0.2em] text-fg/55">
+              {t}
+              <span className="text-accent/70">✦</span>
+            </span>
+          ))}
+        </div>
       </div>
-      <div className="border-b border-edge bg-canvas/85 backdrop-blur-xl">
-        <Container className="flex h-16 items-center justify-between">
+
+      {/* sticky header — elevates on scroll */}
+      <header
+        className={cn(
+          "sticky top-0 z-40 border-b backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-300 ease-out-cubic",
+          scrolled
+            ? "border-edge bg-canvas/90 shadow-[0_10px_30px_-16px_rgba(0,0,0,0.6)]"
+            : "border-transparent bg-canvas/60",
+        )}
+      >
+        <Container
+          className={cn(
+            "flex items-center justify-between transition-[height] duration-300 ease-out-cubic",
+            scrolled ? "h-14" : "h-16",
+          )}
+        >
           <Link href="/" aria-label="NoScalp home">
             <Wordmark />
           </Link>
           <nav className="hidden items-center gap-8 text-sm text-fg/70 md:flex">
             {categories.map((c) => (
-              <Link key={c.label} href={c.href} className="transition-colors hover:text-fg">
+              <Link
+                key={c.label}
+                href={c.href}
+                className="relative transition-colors duration-200 hover:text-fg after:absolute after:-bottom-1.5 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-fg after:transition-transform after:duration-300 after:ease-out-cubic hover:after:scale-x-100"
+              >
                 {c.label}
               </Link>
             ))}
@@ -37,11 +80,14 @@ export function Nav() {
             </button>
             <button aria-label="Bag" className="relative transition-colors hover:text-fg">
               <Icon path="M6 7h12l-1 13H7L6 7zM9 7a3 3 0 016 0" />
+              <span className="absolute -right-1.5 -top-1.5 grid size-4 place-items-center rounded-full bg-accent text-[9px] font-bold text-white">
+                0
+              </span>
             </button>
           </div>
         </Container>
-      </div>
-    </header>
+      </header>
+    </>
   );
 }
 
@@ -87,7 +133,7 @@ export function Footer() {
           ))}
         </div>
         <div className="mt-12 flex flex-col gap-3 border-t border-edge pt-6 text-xs text-mute sm:flex-row sm:items-center sm:justify-between">
-          <span>© {new Date().getFullYear()} NoScalp. Drops, decided fairly.</span>
+          <span>© 2026 NoScalp. Drops, decided fairly.</span>
           <Link href="/engine" className="transition-colors hover:text-fg">
             Built on Amazon Aurora DSQL — see the engine →
           </Link>

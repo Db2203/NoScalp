@@ -82,6 +82,19 @@ body {
 .hero-glow {
   background: radial-gradient(60% 55% at 50% -8%, rgba(126, 140, 255, 0.14), transparent 70%);
 }
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track {
+  animation: marquee 32s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
 /* unify product photos (esp. bright-bg ones) on the dark surface */
 .img-vignette {
   position: relative;

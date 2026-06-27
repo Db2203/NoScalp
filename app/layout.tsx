@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Archivo, Inter, JetBrains_Mono } from "next/font/google";
+import { MotionProvider } from "@/components/MotionProvider";
 import "./globals.css";
 
 const display = Archivo({
@@ -34,7 +35,7 @@ export default function RootLayout({
       className={`${display.variable} ${sans.variable} ${mono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        {children}
+        <MotionProvider>{children}</MotionProvider>
         <div className="grain" aria-hidden />
       </body>
     </html>
