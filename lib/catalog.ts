@@ -58,8 +58,8 @@ export function statusChip(status: string): { tone: "live" | "upcoming" | "close
 }
 
 export const CATEGORIES = [
-  { label: "Sneakers", key: "Sneakers", blurb: "The grails, fairly." },
-  { label: "Consoles", key: "Consoles", blurb: "No more empty carts." },
-  { label: "Tickets", key: "Tickets", blurb: "Face value, real fans." },
-  { label: "Tech", key: "Tech", blurb: "GPUs & gear, no bots." },
+  { label: "Sneakers", key: "Sneakers", blurb: "Pairs, not bot fodder." },
+  { label: "Consoles", key: "Consoles", blurb: "Actually in stock." },
+  { label: "Tickets", key: "Tickets", blurb: "Face value, no scalpers." },
+  { label: "Tech", key: "Tech", blurb: "GPUs and gear, fairly." },
 ];

@@ -146,7 +146,8 @@ export function Footer() {
           <div>
             <Wordmark />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-mute">
-              Limited drops without the bots. Fair by design — and you can verify it.
+              Limited drops, minus the bots. Pick what you want, enter the draw, check the result
+              yourself.
             </p>
           </div>
           {footerCols.map((col) => (

@@ -29,7 +29,7 @@ const ViewTransition =
 export const metadata: Metadata = {
   title: "NoScalp — Drops, decided fairly",
   description:
-    "Limited drops without the bots. Every release is a fair lottery: one entry per verified person, winners drawn at random, never oversold.",
+    "Limited drops, minus the bots. Every release is a random draw: one entry per real person, winners picked fairly, never oversold.",
 };
 
 export default function RootLayout({

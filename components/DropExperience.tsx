@@ -245,10 +245,9 @@ export function DropExperience({ dropId }: { dropId: string }) {
           <div className="mt-6 rounded-2xl border border-edge bg-card p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
             {!identity && (
               <div className="space-y-3">
-                <div className="text-sm font-medium">Verify you&apos;re human to enter</div>
+                <div className="text-sm font-medium">Quick check you&apos;re human</div>
                 <p className="text-sm leading-relaxed text-mute">
-                  We&apos;d normally text or email a code — for this demo it auto-verifies. One verified person, one
-                  entry.
+                  Normally we&apos;d text or email a code. For this demo it just works. One person, one entry.
                 </p>
                 <input
                   value={name}
@@ -286,8 +285,8 @@ export function DropExperience({ dropId }: { dropId: string }) {
                       {busy === "enter" ? "Entering…" : "Enter the draw"}
                     </Button>
                     <p className="text-center text-xs leading-relaxed text-mute">
-                      Random draw · one entry per person · speed doesn&apos;t change your odds · only charged if you
-                      win.
+                      It&apos;s a random draw, one entry per person. Entering early doesn&apos;t help, and you only
+                      pay if you win.
                     </p>
                   </div>
                 )}
@@ -297,8 +296,8 @@ export function DropExperience({ dropId }: { dropId: string }) {
                     <div className="rounded-xl border border-ok/25 bg-ok/[0.06] p-4">
                       <div className="font-medium text-ok">You&apos;re in the draw 🎟️</div>
                       <p className="mt-1 text-sm text-mute">
-                        Entry #{shortHash(status.entryId, 6)} · {oddsLine(stats)}. Winners are drawn at random when
-                        entry closes — being early changed nothing.
+                        Entry #{shortHash(status.entryId, 6)} · {oddsLine(stats)}. We draw winners when entry
+                        closes. Sitting here refreshing won&apos;t change a thing.
                       </p>
                     </div>
                     <Button onClick={() => enter(true)} variant="secondary" className="w-full">

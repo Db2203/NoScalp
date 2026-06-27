@@ -20,12 +20,12 @@ export function Newsletter() {
           <div className="grid items-center gap-8 lg:grid-cols-2">
             <div>
               <h2 className="display text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
-                {done ? "You're on the list." : "Never miss a drop."}
+                {done ? "You're on the list." : "Want a heads-up before the next one?"}
               </h2>
               <p className="mt-3 max-w-md leading-relaxed text-mute">
                 {done
-                  ? "We'll ping you the moment the next drop opens — and never charge you to enter."
-                  : "Early access and restock alerts the moment a drop opens. No spam, just the goods."}
+                  ? "We'll email you the moment a drop opens. That's the only time you'll hear from us."
+                  : "We'll email you when a drop opens. No spam, no weekly newsletter, just that."}
               </p>
             </div>
             {done ? (

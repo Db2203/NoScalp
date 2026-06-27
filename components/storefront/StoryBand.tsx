@@ -10,18 +10,19 @@ export function StoryBand() {
           <div className="scrim absolute inset-0" />
         </div>
         <div className="flex flex-col justify-center rounded-3xl bg-soft p-10 text-fg lg:rounded-l-none">
-          <Kicker>The story</Kicker>
+          <Kicker>Why we built this</Kicker>
           <h2 className="display mt-4 text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
-            Built for the people who actually wanted one.
+            I got tired of losing to bots.
           </h2>
           <p className="mt-5 max-w-md leading-relaxed text-mute">
-            Hype drops became a bot sport — real fans never stood a chance. NoScalp flips it: a
-            random draw where being faster or running a hundred accounts buys you nothing. Just a
-            fair shot, every time.
+            In 2020 I tried to buy a PS5 six times. A bot got every single one. Sneakers, concert
+            tickets, graphics cards, same story: gone in seconds, back online an hour later at triple
+            the price. NoScalp is the fix I wanted — a random draw, one entry per real person, where
+            being fast or running fifty accounts gets you nowhere.
           </p>
           <div className="mt-7">
-            <Button href="/#drops" variant="accent">
-              Shop the drops
+            <Button href="/shop" variant="accent">
+              See what&apos;s dropping
             </Button>
           </div>
         </div>
