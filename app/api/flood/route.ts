@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     if (!body?.dropId) return fail("bad_request", "dropId required");
-    const attempts = Math.min(Math.max(Number(body.attempts) || 5000, 1), 50000);
+    const attempts = Math.min(Math.max(Number(body.attempts) || 5000, 1), 1_000_000);
     const distinct = body.distinct ? Math.min(Math.max(Number(body.distinct), 1), 5000) : undefined;
     const r = await floodBots({
       dropId: String(body.dropId),

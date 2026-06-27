@@ -45,7 +45,7 @@ async function authToken(endpoint: string, region: string, user: string): Promis
   return token;
 }
 
-function dsqlPool(region: RegionKey): Pool {
+function dsqlPool(region: RegionKey, max = 8): Pool {
   const endpoint =
     region === "A"
       ? process.env.DSQL_ENDPOINT_A
@@ -65,20 +65,20 @@ function dsqlPool(region: RegionKey): Pool {
     database: process.env.DSQL_DATABASE || "postgres",
     ssl: { rejectUnauthorized: true },
     // small pool — DSQL caps NEW connections at 100/sec, so we reuse warm ones
-    max: 8,
+    max,
     idleTimeoutMillis: 30_000,
     connectionTimeoutMillis: 10_000,
     password: () => authToken(endpoint, awsRegion, user),
   });
 }
 
-function localPool(): Pool {
+function localPool(max = 8): Pool {
   const raw = process.env.DATABASE_URL;
   // ignore the leftover template placeholder so discrete PG* env vars take over
   const connectionString = raw && !raw.includes("REPLACE_WITH_YOUR_PASSWORD") ? raw : undefined;
   return new Pool({
     connectionString,
-    max: 8,
+    max,
     idleTimeoutMillis: 30_000,
   });
 }
@@ -100,4 +100,17 @@ function pools(): Record<RegionKey, Pool> {
 
 export function pool(region: RegionKey = "A"): Pool {
   return pools()[region];
+}
+
+/**
+ * A wider pool used only by the demo's "normal store" race (region A). The
+ * regular pools cap connections at 8; to show a genuine read-then-write
+ * stampede we need real concurrency, so this one allows more in flight.
+ */
+const gd = globalThis as unknown as { __noscalpDemoPool?: Pool };
+export function demoPool(): Pool {
+  if (!gd.__noscalpDemoPool) {
+    gd.__noscalpDemoPool = dbMode() === "local" ? localPool(40) : dsqlPool("A", 30);
+  }
+  return gd.__noscalpDemoPool;
 }

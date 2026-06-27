@@ -175,6 +175,55 @@ export async function floodBots(args: {
   return { attempts, distinct, inserted, blocked: attempts - inserted, region };
 }
 
+/**
+ * Seed a pool of genuine verified fans (one entry each) so a draw is decided
+ * among real people, not just the bot flood. Demo helper — same batched insert
+ * shape as floodBots, but source='human' and every identity is distinct.
+ */
+export async function seedHumans(args: {
+  dropId: string;
+  count?: number;
+  region?: RegionKey;
+}): Promise<{ count: number; inserted: number; region: RegionKey }> {
+  const region = args.region ?? "A";
+  const count = Math.min(Math.max(args.count ?? 9000, 0), 20000);
+
+  const status = (await pool(region).query(`SELECT status FROM drops WHERE id = $1`, [args.dropId])).rows[0]?.status as
+    | string
+    | undefined;
+  if (!status) throw new EngineError("not_found", "drop not found");
+  if (status !== "registration_open") throw new EngineError("closed", "registration is not open for this drop");
+
+  const hashes = Array.from({ length: count }, (_, i) =>
+    hashContact(`fan-${args.dropId.slice(0, 8)}-${i}@fans.noscalp`),
+  );
+
+  let inserted = 0;
+  const BATCH = 1000;
+  for (let start = 0; start < hashes.length; start += BATCH) {
+    const chunk = hashes.slice(start, start + BATCH);
+    inserted += await withTxn(pool(region), async (c) => {
+      const values: string[] = [];
+      const params: unknown[] = [args.dropId, region];
+      chunk.forEach((h, i) => {
+        const base = i * 3 + 3;
+        values.push(`($${base}, $1, $${base + 1}, $${base + 2}, $2, 'human')`);
+        params.push(entryId(args.dropId, h), identityIdFor(h), h);
+      });
+      const res = await c.query(
+        `INSERT INTO entries (id, drop_id, identity_id, identity_hash, region_written, source)
+         VALUES ${values.join(",")}
+         ON CONFLICT (id) DO NOTHING`,
+        params,
+      );
+      return res.rowCount ?? 0;
+    });
+  }
+
+  await withTxn(pool(region), (c) => audit(c, args.dropId, "fans_registered", region, { count, inserted }));
+  return { count, inserted, region };
+}
+
 /** Current standings for a drop, readable from a pool or inside a transaction. */
 async function standings(
   q: Pool | PoolClient,

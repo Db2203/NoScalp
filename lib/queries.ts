@@ -44,6 +44,8 @@ export type DropStats = {
   humans: number;
   bots: number;
   won: number;
+  wonHumans: number;
+  wonBots: number;
   lost: number;
   registered: number;
   units: { total: number; available: number; allocated: number; claimed: number };
@@ -59,6 +61,8 @@ export async function getDropStats(dropId: string, region: RegionKey = "A"): Pro
          coalesce(sum(case when source='human' then 1 else 0 end),0)::int AS humans,
          coalesce(sum(case when source='bot'   then 1 else 0 end),0)::int AS bots,
          coalesce(sum(case when status='won'        then 1 else 0 end),0)::int AS won,
+         coalesce(sum(case when status='won' and source='human' then 1 else 0 end),0)::int AS won_humans,
+         coalesce(sum(case when status='won' and source='bot'   then 1 else 0 end),0)::int AS won_bots,
          coalesce(sum(case when status='lost'       then 1 else 0 end),0)::int AS lost,
          coalesce(sum(case when status='registered' then 1 else 0 end),0)::int AS registered
        FROM entries WHERE drop_id = $1`,
@@ -83,10 +87,25 @@ export async function getDropStats(dropId: string, region: RegionKey = "A"): Pro
     humans: e.humans,
     bots: e.bots,
     won: e.won,
+    wonHumans: e.won_humans,
+    wonBots: e.won_bots,
     lost: e.lost,
     registered: e.registered,
     units: { total: u.total, available: u.available, allocated: u.allocated, claimed: u.claimed },
   };
+}
+
+export type Winner = { unitNo: number; source: string; id: string };
+
+/** The real allocations for a drawn drop — one per unit, with the winner's source. */
+export async function getWinners(dropId: string, region: RegionKey = "A"): Promise<Winner[]> {
+  const res = await pool(region).query(
+    `SELECT a.unit_no, e.source, a.identity_id
+     FROM allocations a JOIN entries e ON e.id = a.entry_id
+     WHERE a.drop_id = $1 ORDER BY a.unit_no`,
+    [dropId],
+  );
+  return res.rows.map((r) => ({ unitNo: r.unit_no, source: r.source, id: String(r.identity_id).slice(0, 4) }));
 }
 
 export type IdentityStatus = {

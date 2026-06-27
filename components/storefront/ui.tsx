@@ -13,7 +13,7 @@ type ButtonProps = {
   children: ReactNode;
   href?: string;
   onClick?: () => void;
-  variant?: "primary" | "accent" | "secondary";
+  variant?: "primary" | "accent" | "secondary" | "danger";
   size?: "md" | "lg";
   disabled?: boolean;
   className?: string;
@@ -25,6 +25,7 @@ const variants = {
   primary: "bg-fg text-canvas hover:bg-fg/90",
   accent: "bg-accent text-white hover:bg-accent-ink",
   secondary: "border border-fg/15 bg-transparent text-fg hover:bg-soft",
+  danger: "bg-warn text-white hover:bg-warn/90",
 };
 
 export function Button({

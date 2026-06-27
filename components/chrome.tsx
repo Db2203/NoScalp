@@ -125,7 +125,7 @@ const footerCols: { title: string; links: [string, string][] }[] = [
     title: "Help",
     links: [
       ["How drops work", "/#how"],
-      ["The engine", "/engine"],
+      ["Fairness & proof", "/fairness"],
     ],
   },
   {
@@ -133,7 +133,7 @@ const footerCols: { title: string; links: [string, string][] }[] = [
     links: [
       ["Terms", "/"],
       ["Privacy", "/"],
-      ["Fairness", "/engine"],
+      ["Fairness", "/fairness"],
     ],
   },
 ];
@@ -167,8 +167,8 @@ export function Footer() {
         </div>
         <div className="mt-12 flex flex-col gap-3 border-t border-edge pt-6 text-xs text-mute sm:flex-row sm:items-center sm:justify-between">
           <span>© 2026 NoScalp. Drops, decided fairly.</span>
-          <Link href="/engine" className="transition-colors hover:text-fg">
-            Built on Amazon Aurora DSQL — see the engine →
+          <Link href="/fairness" className="transition-colors hover:text-fg">
+            Built on Amazon Aurora DSQL — see how it stays fair →
           </Link>
         </div>
       </Container>

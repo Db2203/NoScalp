@@ -152,6 +152,18 @@ export function ddlStatements(): { name: string; sql: string }[] {
       )`,
     },
 
+    {
+      // demo-only: the "normal store" with no per-unit guard. Orders are
+      // independent rows, so a check-then-act race oversells it (see lib/naive.ts).
+      name: "naive_orders",
+      sql: `CREATE TABLE IF NOT EXISTS naive_orders (
+        id      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        drop_id UUID NOT NULL,
+        buyer   TEXT NOT NULL,
+        at      TIMESTAMPTZ NOT NULL DEFAULT now()
+      )`,
+    },
+
     // indexes
     { name: "idx_drops_status", sql: idx("idx_drops_status", "drops", "status") },
     { name: "idx_units_state", sql: idx("idx_units_state", "drop_units", "drop_id, state") },

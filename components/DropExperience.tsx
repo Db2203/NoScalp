@@ -356,7 +356,7 @@ export function DropExperience({ dropId }: { dropId: string }) {
                     <p className="mt-1 text-sm leading-relaxed text-mute">
                       You were 1 of {num(stats?.entriesTotal ?? 0)} entries; {num(stats?.won ?? 0)} winners were drawn
                       at random.{" "}
-                      <Link href="/engine" className="text-accent hover:underline">
+                      <Link href="/fairness" className="text-accent hover:underline">
                         See how this draw was decided →
                       </Link>
                     </p>
