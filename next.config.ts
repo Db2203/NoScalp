@@ -6,6 +6,10 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: fileURLToPath(new URL(".", import.meta.url)),
   },
+  // Native route + shared-element (card→hero) transitions.
+  experimental: {
+    viewTransition: true,
+  },
 };
 
 export default nextConfig;

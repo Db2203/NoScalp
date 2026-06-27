@@ -15,6 +15,7 @@ export function ProductCard({ d }: { d: DropView }) {
               src={d.image}
               alt={d.title}
               loading="lazy"
+              style={{ viewTransitionName: `d-${d.id}` }}
               className="size-full object-cover transition-transform duration-500 ease-out-cubic group-hover:scale-[1.05]"
             />
           ) : (

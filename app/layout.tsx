@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import * as React from "react";
 import { Archivo, Inter, JetBrains_Mono } from "next/font/google";
 import { MotionProvider } from "@/components/MotionProvider";
 import "./globals.css";
@@ -18,6 +19,13 @@ const mono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
+// Use React's experimental ViewTransition when the runtime provides it (Next 16
+// canary), otherwise fall back to a passthrough — so route/shared-element morphs
+// are a progressive enhancement that never breaks the build or render.
+const ViewTransition =
+  (React as unknown as { unstable_ViewTransition?: React.ComponentType<{ children?: React.ReactNode }> })
+    .unstable_ViewTransition ?? (({ children }: { children?: React.ReactNode }) => <>{children}</>);
+
 export const metadata: Metadata = {
   title: "NoScalp — Drops, decided fairly",
   description:
@@ -35,7 +43,9 @@ export default function RootLayout({
       className={`${display.variable} ${sans.variable} ${mono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <MotionProvider>{children}</MotionProvider>
+        <ViewTransition>
+          <MotionProvider>{children}</MotionProvider>
+        </ViewTransition>
         <div className="grain" aria-hidden />
       </body>
     </html>

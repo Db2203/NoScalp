@@ -188,7 +188,12 @@ export function DropExperience({ dropId }: { dropId: string }) {
           <div className="img-vignette relative aspect-square overflow-hidden rounded-3xl bg-soft">
             {heroImg ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={heroImg} alt={view?.title ?? ""} className="size-full object-cover" />
+              <img
+                src={heroImg}
+                alt={view?.title ?? ""}
+                style={{ viewTransitionName: `d-${dropId}` }}
+                className="size-full object-cover"
+              />
             ) : (
               <div className="display grid size-full place-items-center text-3xl text-mute">{view?.brand}</div>
             )}
