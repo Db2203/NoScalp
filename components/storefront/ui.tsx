@@ -70,7 +70,7 @@ export function Chip({
   }[tone];
   return (
     <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide", map)}>
-      {tone === "live" && <span className="size-1.5 rounded-full bg-ok" />}
+      {tone === "live" && <span className="size-1.5 rounded-full bg-ok motion-safe:animate-pulse" />}
       {children}
     </span>
   );

@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  /* ── Storefront (light, the default) ── */
-  --color-canvas: #f7f6f3; /* warm off-white */
-  --color-fg: #15130f; /* warm near-black */
-  --color-card: #ffffff;
-  --color-soft: #efece6;
-  --color-mute: #6b6862;
-  --color-edge: rgba(0, 0, 0, 0.1);
-  --color-accent: #1f4dff; /* electric blue — the one accent */
-  --color-accent-ink: #0d2bbd;
-  --color-ok: #1f9d57;
-  --color-warn: #b4530f;
+  /* ── Storefront (dark premium editorial) ── */
+  --color-canvas: #121110; /* warm near-black */
+  --color-fg: #f3efe7; /* warm off-white */
+  --color-card: #1b1916;
+  --color-soft: #221f1b;
+  --color-mute: #9c948a;
+  --color-edge: rgba(255, 255, 255, 0.1);
+  --color-accent: #7e8cff; /* periwinkle indigo — pops on dark */
+  --color-accent-ink: #6473f0;
+  --color-ok: #46e0a0;
+  --color-warn: #ff8a5b;
 
   /* ── Engine view (dark, kept from before) ── */
   --color-ink: #0b0d12;
@@ -30,6 +30,10 @@
   --font-mono: var(--font-mono), ui-monospace, "SFMono-Regular", monospace;
 
   --ease-out-cubic: cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+:root {
+  color-scheme: dark;
 }
 
 body {
@@ -63,6 +67,31 @@ body {
 /* subtle scrim for imagery */
 .scrim {
   background: linear-gradient(to top, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0) 55%);
+}
+
+/* premium dark depth */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.hero-glow {
+  background: radial-gradient(60% 55% at 50% -8%, rgba(126, 140, 255, 0.14), transparent 70%);
+}
+/* unify product photos (esp. bright-bg ones) on the dark surface */
+.img-vignette {
+  position: relative;
+}
+.img-vignette::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 50px 2px rgba(0, 0, 0, 0.4);
 }
 
 /* ── Engine-only helpers (dark) ── */

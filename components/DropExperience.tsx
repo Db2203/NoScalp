@@ -184,7 +184,7 @@ export function DropExperience({ dropId }: { dropId: string }) {
       <div className="mt-5 grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
         {/* gallery */}
         <div>
-          <div className="relative aspect-square overflow-hidden rounded-3xl bg-soft">
+          <div className="img-vignette relative aspect-square overflow-hidden rounded-3xl bg-soft">
             {heroImg ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={heroImg} alt={view?.title ?? ""} className="size-full object-cover" />

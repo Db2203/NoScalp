@@ -1,52 +1,86 @@
+"use client";
+
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { Countdown } from "../Countdown";
 import { Button, Chip, Container, Kicker } from "./ui";
 import { money } from "@/lib/format";
 import { statusChip, type DropView } from "@/lib/catalog";
 
+const ease: [number, number, number, number] = [0.33, 1, 0.68, 1];
+
 export function Hero({ d }: { d: DropView }) {
+  const reduce = useReducedMotion();
   const chip = statusChip(d.status);
+  const isOpen = d.status === "registration_open";
+
+  const container: Variants = {
+    hidden: {},
+    show: { transition: { staggerChildren: reduce ? 0 : 0.09, delayChildren: 0.05 } },
+  };
+  const item: Variants = {
+    hidden: { opacity: reduce ? 1 : 0, y: reduce ? 0 : 22 },
+    show: { opacity: 1, y: 0, transition: { duration: reduce ? 0 : 0.6, ease } },
+  };
+
   return (
-    <section className="border-b border-edge">
-      <Container className="grid items-center gap-10 py-14 lg:grid-cols-2 lg:py-20">
-        <div>
-          <Kicker>This week&apos;s drop</Kicker>
-          <h1 className="display mt-4 text-[clamp(2.5rem,5.5vw,4.5rem)] font-extrabold leading-[1.02] tracking-[-0.03em]">
-            {d.title}
-          </h1>
-          <p className="mt-5 max-w-md text-lg leading-relaxed text-mute">
-            {d.tagline ||
-              "Enter the draw for a fair shot. No bots, no scalpers, no carts gone in four seconds."}
-          </p>
-          <div className="mt-7 flex flex-wrap items-center gap-3">
+    <section className="relative overflow-hidden border-b border-edge">
+      <div className="hero-glow pointer-events-none absolute inset-0" aria-hidden />
+      <Container className="relative grid items-center gap-10 py-16 lg:grid-cols-2 lg:gap-14 lg:py-24">
+        <motion.div variants={container} initial="hidden" animate="show">
+          <motion.div variants={item}>
+            <Kicker>This week&apos;s drop</Kicker>
+          </motion.div>
+          <motion.h1
+            variants={item}
+            className="display mt-5 text-[clamp(3rem,6.5vw,5.75rem)] font-extrabold leading-[0.98] tracking-[-0.035em]"
+          >
+            Won by fans,
+            <br />
+            not bots.
+          </motion.h1>
+          <motion.p variants={item} className="mt-6 max-w-md text-lg leading-relaxed text-mute">
+            {d.title} is live. Enter the draw for a fair shot at retail — no bots, no scalpers, no
+            carts gone in four seconds.
+          </motion.p>
+          <motion.div variants={item} className="mt-8 flex flex-wrap items-center gap-3">
             <Button href={`/drops/${d.id}`} size="lg">
               Enter the draw
             </Button>
             <Button href="/#drops" variant="secondary" size="lg">
               View all drops
             </Button>
-          </div>
-          <div className="mt-6 flex items-center gap-3 text-sm text-mute">
-            <span className="font-medium text-fg">{money(d.price)}</span>
-            <span>·</span>
-            {d.status === "registration_open" ? (
-              <span>
-                entry closes in <Countdown to={d.closeAt} />
-              </span>
-            ) : (
-              <span>{chip.label}</span>
-            )}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <div className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-soft shadow-[0_40px_90px_-40px_rgba(0,0,0,0.4)]">
+        <motion.div
+          initial={reduce ? false : { opacity: 0, scale: 1.05 }}
+          animate={reduce ? {} : { opacity: 1, scale: 1 }}
+          transition={{ duration: 0.9, ease }}
+          className="img-vignette relative aspect-[4/3] overflow-hidden rounded-3xl bg-soft"
+        >
           {d.image ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={d.image} alt={d.title} className="size-full object-cover" />
           ) : null}
+          <div className="scrim absolute inset-0" />
           <div className="absolute left-4 top-4">
             <Chip tone={chip.tone}>{chip.label}</Chip>
           </div>
-        </div>
+          <div className="absolute inset-x-5 bottom-5 flex items-end justify-between gap-3">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">{d.brand}</div>
+              <div className="display mt-1 text-lg font-bold text-white">{d.title}</div>
+            </div>
+            <div className="text-right">
+              <div className="display text-xl font-bold text-white">{money(d.price)}</div>
+              {isOpen && (
+                <div className="mono text-xs text-white/70">
+                  <Countdown to={d.closeAt} />
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
       </Container>
     </section>
   );

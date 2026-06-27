@@ -11,7 +11,7 @@ const categories = [
 export function Nav() {
   return (
     <header className="sticky top-0 z-40">
-      <div className="bg-fg text-canvas">
+      <div className="border-b border-edge bg-soft text-fg/70">
         <Container className="flex h-9 items-center justify-center text-center text-[12px] tracking-wide">
           Every drop is a fair lottery — one entry per person, winners drawn at random.
         </Container>
