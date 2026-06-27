@@ -10,7 +10,7 @@ export function CategoryTiles() {
           {CATEGORIES.map((c) => (
             <Link
               key={c.key}
-              href="/#drops"
+              href={`/shop?category=${c.key}`}
               className="lift group flex aspect-[4/3] flex-col justify-between rounded-2xl border border-edge bg-soft p-6 hover:shadow-[0_18px_40px_-18px_rgba(0,0,0,0.22)]"
             >
               <span className="text-xs font-semibold uppercase tracking-[0.16em] text-mute">{c.blurb}</span>

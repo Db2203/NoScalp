@@ -5,10 +5,10 @@ import { useEffect, useState } from "react";
 import { Container, Wordmark, cn } from "./storefront/ui";
 
 const categories = [
-  { label: "Sneakers", href: "/#drops" },
-  { label: "Consoles", href: "/#drops" },
-  { label: "Tickets", href: "/#drops" },
-  { label: "Tech", href: "/#drops" },
+  { label: "Sneakers", href: "/shop?category=Sneakers" },
+  { label: "Consoles", href: "/shop?category=Consoles" },
+  { label: "Tickets", href: "/shop?category=Tickets" },
+  { label: "Tech", href: "/shop?category=Tech" },
 ];
 
 const marquee = [
@@ -72,9 +72,9 @@ export function Nav() {
             ))}
           </nav>
           <div className="flex items-center gap-4 text-fg/70">
-            <button aria-label="Search" className="transition-colors hover:text-fg">
+            <Link href="/shop" aria-label="Search" className="transition-colors hover:text-fg">
               <Icon path="M21 21l-4.3-4.3M11 19a8 8 0 100-16 8 8 0 000 16z" />
-            </button>
+            </Link>
             <button aria-label="Account" className="transition-colors hover:text-fg">
               <Icon path="M20 21a8 8 0 10-16 0M12 11a4 4 0 100-8 4 4 0 000 8z" />
             </button>

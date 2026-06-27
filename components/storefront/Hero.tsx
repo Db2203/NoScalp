@@ -59,7 +59,7 @@ export function Hero({ d }: { d: DropView }) {
             <Button href={`/drops/${d.id}`} size="lg">
               Enter the draw
             </Button>
-            <Button href="/#drops" variant="secondary" size="lg">
+            <Button href="/shop" variant="secondary" size="lg">
               View all drops
             </Button>
           </motion.div>

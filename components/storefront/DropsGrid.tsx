@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Container, Kicker } from "./ui";
 import { ProductCard } from "./ProductCard";
 import type { DropView } from "@/lib/catalog";
@@ -11,7 +12,9 @@ export function DropsGrid({ drops, title }: { drops: DropView[]; title: string }
             <Kicker>Live &amp; upcoming</Kicker>
             <h2 className="display mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{title}</h2>
           </div>
-          <span className="hidden text-sm text-mute sm:block">{drops.length} drops</span>
+          <Link href="/shop" className="hidden text-sm text-accent transition-colors hover:text-fg sm:block">
+            View all →
+          </Link>
         </div>
         <div className="mt-9 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {drops.map((d) => (
