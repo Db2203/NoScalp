@@ -39,6 +39,7 @@ export function ShopFilter() {
           <button
             key={c}
             onClick={() => setCategory(c)}
+            aria-pressed={c === active}
             className={cn(
               "rounded-full px-4 py-2 text-sm transition-colors duration-200 ease-out-cubic",
               c === active ? "bg-fg text-canvas" : "border border-edge text-fg/70 hover:bg-soft",

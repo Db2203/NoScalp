@@ -38,6 +38,7 @@ export function DropExperience({ dropId }: { dropId: string }) {
   const [status, setStatus] = useState<Status>(null);
   const [identity, setIdentity] = useState<Identity | null>(null);
   const [imgIdx, setImgIdx] = useState(0);
+  const [notFound, setNotFound] = useState(false);
 
   const [contact, setContact] = useState("");
   const [name, setName] = useState("");
@@ -69,7 +70,9 @@ export function DropExperience({ dropId }: { dropId: string }) {
   );
 
   useEffect(() => {
-    jget<DropRow>(`/api/drop?id=${dropId}`).then(setDropRow).catch(() => {});
+    jget<DropRow>(`/api/drop?id=${dropId}`)
+      .then(setDropRow)
+      .catch(() => setNotFound(true));
   }, [dropId]);
 
   useEffect(() => {
@@ -176,6 +179,18 @@ export function DropExperience({ dropId }: { dropId: string }) {
   const isOpen = view?.status === "registration_open";
   const heroImg = view?.images[imgIdx] ?? view?.image ?? null;
 
+  if (notFound) {
+    return (
+      <Container className="py-24 text-center">
+        <h1 className="display text-3xl font-bold tracking-tight">Drop not found</h1>
+        <p className="mt-2 text-mute">This drop doesn&apos;t exist or was removed.</p>
+        <div className="mt-6 flex justify-center">
+          <Button href="/shop">Browse drops</Button>
+        </div>
+      </Container>
+    );
+  }
+
   return (
     <Container className="py-8 sm:py-10">
       <Link href="/" className="text-sm text-mute transition-colors hover:text-fg">
@@ -191,7 +206,6 @@ export function DropExperience({ dropId }: { dropId: string }) {
               <img
                 src={heroImg}
                 alt={view?.title ?? ""}
-                style={{ viewTransitionName: `d-${dropId}` }}
                 className="size-full object-cover"
               />
             ) : (
@@ -422,7 +436,8 @@ export function DropExperience({ dropId }: { dropId: string }) {
 function oddsLine(stats: Stats | null): string {
   if (!stats || stats.entriesTotal === 0) return "your shot is in";
   const winners = stats.units.total;
-  const pct = ((winners / Math.max(stats.entriesTotal, winners)) * 100).toFixed(1);
+  if (winners >= stats.entriesTotal) return "great odds right now";
+  const pct = ((winners / stats.entriesTotal) * 100).toFixed(1);
   return `~${pct}% odds`;
 }
 

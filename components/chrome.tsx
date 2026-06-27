@@ -33,12 +33,12 @@ export function Nav() {
   return (
     <>
       {/* now-dropping marquee */}
-      <div className="overflow-hidden border-b border-edge bg-soft">
+      <div className="overflow-hidden border-b border-edge bg-soft" aria-hidden="true">
         <div className="marquee-track flex w-max items-center py-2">
           {[...marquee, ...marquee].map((t, i) => (
-            <span key={i} className="flex items-center gap-6 pr-6 text-[11px] uppercase tracking-[0.2em] text-fg/55">
+            <span key={i} className="flex items-center gap-6 pr-6 text-[11px] uppercase tracking-[0.2em] text-mute">
               {t}
-              <span className="text-accent/70">✦</span>
+              <span className="text-accent">✦</span>
             </span>
           ))}
         </div>

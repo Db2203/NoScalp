@@ -13,7 +13,7 @@ export function WishlistButton({ id, className }: { id: string; className?: stri
       aria-pressed={saved}
       onClick={() => toggle(id)}
       className={cn(
-        "grid size-8 place-items-center rounded-full bg-black/40 backdrop-blur-sm transition-colors",
+        "grid size-8 place-items-center rounded-full bg-black/55 backdrop-blur-sm transition-colors",
         saved ? "text-accent" : "text-white/80 hover:text-white",
         className,
       )}

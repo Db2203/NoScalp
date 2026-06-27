@@ -11,11 +11,12 @@ export const dynamic = "force-dynamic";
 export default async function Shop({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; q?: string }>;
+  searchParams: Promise<{ category?: string | string[]; q?: string | string[] }>;
 }) {
   const sp = await searchParams;
-  const category = sp.category;
-  const q = sp.q?.toLowerCase().trim();
+  const category = Array.isArray(sp.category) ? sp.category[0] : sp.category;
+  const rawQ = Array.isArray(sp.q) ? sp.q[0] : sp.q;
+  const q = rawQ?.toLowerCase().trim();
 
   let drops: DropView[] = [];
   try {
@@ -28,7 +29,7 @@ export default async function Shop({
   if (category) filtered = filtered.filter((d) => d.category === category);
   if (q) filtered = filtered.filter((d) => `${d.title} ${d.brand} ${d.category}`.toLowerCase().includes(q));
 
-  const heading = category ?? (q ? `Results for “${sp.q}”` : "All drops");
+  const heading = category ?? (rawQ ? `Results for “${rawQ}”` : "All drops");
 
   return (
     <>
