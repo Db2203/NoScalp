@@ -17,7 +17,7 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section className="border-b border-edge">
+    <section id="how" className="scroll-mt-24 border-b border-edge">
       <Container className="py-16 sm:py-20">
         <Kicker>How drops work</Kicker>
         <h2 className="display mt-3 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">

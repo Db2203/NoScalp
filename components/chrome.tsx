@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Container, Wordmark, cn } from "./storefront/ui";
+import { useWishlist } from "./storefront/useWishlist";
 
 const categories = [
   { label: "Sneakers", href: "/shop?category=Sneakers" },
@@ -22,6 +23,7 @@ const marquee = [
 
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
+  const { count: saved } = useWishlist();
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -72,18 +74,20 @@ export function Nav() {
             ))}
           </nav>
           <div className="flex items-center gap-4 text-fg/70">
-            <Link href="/shop" aria-label="Search" className="transition-colors hover:text-fg">
+            <Link href="/shop" aria-label="Search drops" className="transition-colors hover:text-fg">
               <Icon path="M21 21l-4.3-4.3M11 19a8 8 0 100-16 8 8 0 000 16z" />
             </Link>
-            <button aria-label="Account" className="transition-colors hover:text-fg">
-              <Icon path="M20 21a8 8 0 10-16 0M12 11a4 4 0 100-8 4 4 0 000 8z" />
-            </button>
-            <button aria-label="Bag" className="relative transition-colors hover:text-fg">
-              <Icon path="M6 7h12l-1 13H7L6 7zM9 7a3 3 0 016 0" />
-              <span className="absolute -right-1.5 -top-1.5 grid size-4 place-items-center rounded-full bg-accent text-[9px] font-bold text-white">
-                0
-              </span>
-            </button>
+            <Link href="/wishlist" aria-label="Saved drops" className="relative transition-colors hover:text-fg">
+              <Icon path="M20.8 5.6a5 5 0 00-7.1 0L12 7.3l-1.7-1.7a5 5 0 10-7.1 7.1L12 21l8.8-8.3a5 5 0 000-7.1z" />
+              {saved > 0 && (
+                <span className="absolute -right-1.5 -top-1.5 grid size-4 place-items-center rounded-full bg-accent text-[9px] font-bold text-white">
+                  {saved}
+                </span>
+              )}
+            </Link>
+            <Link href="/account" aria-label="My entries" className="transition-colors hover:text-fg">
+              <Icon path="M4 7a1 1 0 011-1h14a1 1 0 011 1v3a2 2 0 000 4v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3a2 2 0 000-4V7zM14 6v12" />
+            </Link>
           </div>
         </Container>
       </header>
@@ -99,11 +103,39 @@ function Icon({ path }: { path: string }) {
   );
 }
 
-const footerCols = [
-  { title: "Shop", links: ["All drops", "Sneakers", "Consoles", "Tickets", "Tech"] },
-  { title: "Company", links: ["About", "Careers", "Press", "Partners"] },
-  { title: "Help", links: ["How drops work", "Track an entry", "Returns", "Contact"] },
-  { title: "Legal", links: ["Terms", "Privacy", "Fairness policy"] },
+const footerCols: { title: string; links: [string, string][] }[] = [
+  {
+    title: "Shop",
+    links: [
+      ["All drops", "/shop"],
+      ["Sneakers", "/shop?category=Sneakers"],
+      ["Consoles", "/shop?category=Consoles"],
+      ["Tickets", "/shop?category=Tickets"],
+      ["Tech", "/shop?category=Tech"],
+    ],
+  },
+  {
+    title: "Account",
+    links: [
+      ["My entries", "/account"],
+      ["Saved drops", "/wishlist"],
+    ],
+  },
+  {
+    title: "Help",
+    links: [
+      ["How drops work", "/#how"],
+      ["The engine", "/engine"],
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      ["Terms", "/"],
+      ["Privacy", "/"],
+      ["Fairness", "/engine"],
+    ],
+  },
 ];
 
 export function Footer() {
@@ -121,10 +153,10 @@ export function Footer() {
             <div key={col.title}>
               <div className="text-xs font-semibold uppercase tracking-[0.16em] text-mute">{col.title}</div>
               <ul className="mt-4 space-y-2.5 text-sm text-fg/75">
-                {col.links.map((l) => (
-                  <li key={l}>
-                    <Link href="/" className="transition-colors hover:text-fg">
-                      {l}
+                {col.links.map(([label, href]) => (
+                  <li key={label}>
+                    <Link href={href} className="transition-colors hover:text-fg">
+                      {label}
                     </Link>
                   </li>
                 ))}

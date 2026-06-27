@@ -151,3 +151,43 @@ export async function getAuditLog(dropId: string, region: RegionKey = "A", limit
     at: r.at,
   }));
 }
+
+export type MyEntry = {
+  dropId: string;
+  title: string;
+  image: string | null;
+  price: number;
+  entryStatus: string;
+  unitNo: number | null;
+  allocState: string | null;
+  orderId: string | null;
+  dropStatus: string;
+  closeAt: string;
+};
+
+/** Every drop a verified identity has entered, with its outcome. Read-only. */
+export async function getMyEntries(identityId: string, region: RegionKey = "A"): Promise<MyEntry[]> {
+  const res = await pool(region).query(
+    `SELECT e.drop_id, e.status AS entry_status, e.created_at,
+            a.unit_no, a.state AS alloc_state, a.order_id,
+            d.title, d.image_url, d.price_cents, d.status AS drop_status, d.register_close_at
+     FROM entries e
+     JOIN drops d ON d.id = e.drop_id
+     LEFT JOIN allocations a ON a.entry_id = e.id
+     WHERE e.identity_id = $1
+     ORDER BY e.created_at DESC`,
+    [identityId],
+  );
+  return res.rows.map((r) => ({
+    dropId: r.drop_id,
+    title: r.title,
+    image: r.image_url,
+    price: r.price_cents,
+    entryStatus: r.entry_status,
+    unitNo: r.unit_no,
+    allocState: r.alloc_state,
+    orderId: r.order_id,
+    dropStatus: r.drop_status,
+    closeAt: r.register_close_at,
+  }));
+}
