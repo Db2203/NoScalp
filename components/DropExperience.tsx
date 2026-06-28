@@ -207,6 +207,22 @@ export function DropExperience({ dropId }: { dropId: string }) {
     }
   }
 
+  async function runReset() {
+    setError(null);
+    setBusy("reset");
+    try {
+      const token = localStorage.getItem("noscalp_admin_token");
+      await jpost("/api/reset", { stock: 100 }, token ? { "x-admin-token": token } : undefined);
+      setPay(null);
+      jget<DropRow>(`/api/drop?id=${dropId}`).then(setDropRow).catch(() => {});
+      if (identity) await refreshStatus(identity);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
   function forget() {
     localStorage.removeItem(STORE_KEY);
     setIdentity(null);
@@ -461,13 +477,19 @@ export function DropExperience({ dropId }: { dropId: string }) {
             {error && <p className="mt-3 text-sm text-warn">{error}</p>}
           </div>
 
-          {operator && isOpen && (
+          {operator && (
             <button
-              onClick={runDraw}
-              disabled={busy === "draw"}
+              onClick={isOpen ? runDraw : runReset}
+              disabled={busy === "draw" || busy === "reset"}
               className="mt-3 w-full text-center text-xs text-mute underline underline-offset-2 transition-colors hover:text-fg disabled:opacity-50"
             >
-              {busy === "draw" ? "Drawing…" : "▶ Run the draw now (operator)"}
+              {busy === "draw"
+                ? "Drawing…"
+                : busy === "reset"
+                  ? "Resetting…"
+                  : isOpen
+                    ? "▶ Run the draw now (operator)"
+                    : "↺ Reset drops (operator)"}
             </button>
           )}
 
