@@ -161,9 +161,20 @@ export const CATALOG: SeedDrop[] = [
 
 async function seedOne(d: SeedDrop) {
   const db = pool("A");
-  for (const t of ["orders", "purchase_slots", "allocations", "drop_units", "entries", "audit_log"]) {
-    await db.query(`DELETE FROM ${t} WHERE drop_id = $1`, [d.id]);
+  // Clear prior state. Aurora DSQL caps rows modified per transaction (~3,000),
+  // and a demo drop can accumulate thousands of entries across runs — so delete
+  // the id-keyed tables in chunks instead of one big statement.
+  for (const t of ["orders", "purchase_slots", "allocations", "entries", "audit_log"]) {
+    for (;;) {
+      const r = await db.query(
+        `DELETE FROM ${t} WHERE id IN (SELECT id FROM ${t} WHERE drop_id = $1 LIMIT 1000)`,
+        [d.id],
+      );
+      if ((r.rowCount ?? 0) === 0) break;
+    }
   }
+  // drop_units has no single-column id; it's small (<= stock), so one delete is fine.
+  await db.query(`DELETE FROM drop_units WHERE drop_id = $1`, [d.id]);
 
   const meta = {
     brand: d.brand,
