@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Countdown } from "./Countdown";
 import { Button, Chip, Container, cn } from "./storefront/ui";
+import { CheckoutPanel } from "./storefront/CheckoutPanel";
 import { CountUp } from "./storefront/CountUp";
 import { jget, jpost } from "@/lib/client";
 import { money, num, shortHash } from "@/lib/format";
@@ -47,12 +48,17 @@ export function DropExperience({ dropId }: { dropId: string }) {
   const [toast, setToast] = useState<string | null>(null);
   const stampShown = useRef(false);
   const [stamp, setStamp] = useState(false);
+  const [pay, setPay] = useState<{ clientSecret: string; amount: number } | null>(null);
+  const [operator, setOperator] = useState(false);
+  const stripeEnabled = !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
   useEffect(() => {
     const id = setTimeout(() => {
       try {
         const raw = localStorage.getItem(STORE_KEY);
         if (raw) setIdentity(JSON.parse(raw));
+        // operator (demo) control: visible in dev, or on a deploy only when the admin token is set
+        setOperator(process.env.NODE_ENV !== "production" || !!localStorage.getItem("noscalp_admin_token"));
       } catch {}
     }, 0);
     return () => clearTimeout(id);
@@ -160,6 +166,40 @@ export function DropExperience({ dropId }: { dropId: string }) {
     try {
       await jpost("/api/claim", { allocationId: status.allocationId, identityId: identity.identityId });
       await refreshStatus(identity);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function startCheckout() {
+    if (!identity || !status?.allocationId) return;
+    // No Stripe configured (e.g. local dev without keys) → finalize directly.
+    if (!stripeEnabled) return claim();
+    setError(null);
+    setBusy("checkout");
+    try {
+      const r = await jpost<{ clientSecret: string; amount: number }>("/api/checkout", {
+        allocationId: status.allocationId,
+        identityId: identity.identityId,
+      });
+      setPay({ clientSecret: r.clientSecret, amount: r.amount });
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function runDraw() {
+    setError(null);
+    setBusy("draw");
+    try {
+      const token = localStorage.getItem("noscalp_admin_token");
+      await jpost("/api/draw", { dropId }, token ? { "x-admin-token": token } : undefined);
+      jget<DropRow>(`/api/drop?id=${dropId}`).then(setDropRow).catch(() => {});
+      if (identity) await refreshStatus(identity);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -335,9 +375,26 @@ export function DropExperience({ dropId }: { dropId: string }) {
                         </>
                       )}
                     </p>
-                    <Button onClick={claim} disabled={busy === "claim"} className="w-full" size="lg">
-                      {busy === "claim" ? "Checking out…" : `Check out · ${money(view?.price ?? 0)}`}
-                    </Button>
+                    {pay ? (
+                      <CheckoutPanel
+                        clientSecret={pay.clientSecret}
+                        amountLabel={money(pay.amount)}
+                        onPaid={async () => {
+                          await claim();
+                          setPay(null);
+                        }}
+                        onCancel={() => setPay(null)}
+                      />
+                    ) : (
+                      <Button
+                        onClick={startCheckout}
+                        disabled={busy === "checkout" || busy === "claim"}
+                        className="w-full"
+                        size="lg"
+                      >
+                        {busy === "checkout" ? "Loading…" : `Check out · ${money(view?.price ?? 0)}`}
+                      </Button>
+                    )}
                   </div>
                 )}
 
@@ -349,6 +406,8 @@ export function DropExperience({ dropId }: { dropId: string }) {
                     </div>
                     <div className="mt-3 space-y-1 text-sm text-mute">
                       <RowLine k="Unit" v={`#${status.unitNo}`} />
+                      <RowLine k="Item" v={money(view?.price ?? 0)} />
+                      <RowLine k="NoScalp fee (5%)" v={money(Math.round((view?.price ?? 0) * 0.05))} />
                       <RowLine k="Order" v={shortHash(status.orderId, 8)} />
                     </div>
                   </div>
@@ -401,6 +460,16 @@ export function DropExperience({ dropId }: { dropId: string }) {
 
             {error && <p className="mt-3 text-sm text-warn">{error}</p>}
           </div>
+
+          {operator && isOpen && (
+            <button
+              onClick={runDraw}
+              disabled={busy === "draw"}
+              className="mt-3 w-full text-center text-xs text-mute underline underline-offset-2 transition-colors hover:text-fg disabled:opacity-50"
+            >
+              {busy === "draw" ? "Drawing…" : "▶ Run the draw now (operator)"}
+            </button>
+          )}
 
           <p className="mt-4 text-center text-xs text-mute">Authentic · Free returns · Charged only if you win</p>
         </div>

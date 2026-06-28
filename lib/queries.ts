@@ -126,6 +126,31 @@ export async function getDrawProof(dropId: string, region: RegionKey = "A"): Pro
   };
 }
 
+export type CheckoutInfo = {
+  dropId: string;
+  unitNo: number;
+  priceCents: number;
+  state: string;
+  claimCloseAt: string;
+} | null;
+
+/** Price + ownership check for a winner's checkout (amount is computed server-side, never trusted from the client). */
+export async function getCheckoutInfo(
+  allocationId: string,
+  identityId: string,
+  region: RegionKey = "A",
+): Promise<CheckoutInfo> {
+  const res = await pool(region).query(
+    `SELECT a.drop_id, a.unit_no, a.state, a.claim_close_at, d.price_cents
+     FROM allocations a JOIN drops d ON d.id = a.drop_id
+     WHERE a.id = $1 AND a.identity_id = $2`,
+    [allocationId, identityId],
+  );
+  const r = res.rows[0];
+  if (!r) return null;
+  return { dropId: r.drop_id, unitNo: r.unit_no, priceCents: r.price_cents, state: r.state, claimCloseAt: r.claim_close_at };
+}
+
 export type Winner = { unitNo: number; source: string; id: string };
 
 /** The real allocations for a drawn drop — one per unit, with the winner's source. */
