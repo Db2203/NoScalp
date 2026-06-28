@@ -305,7 +305,7 @@ export function DropExperience({ dropId, initialDrop = null }: { dropId: string;
             <span className="display text-2xl font-bold">{money(view?.price ?? 0)}</span>
             {view?.resale ? (
               <span className="text-sm text-mute">
-                resells for ~<span className="line-through">{money(view.resale)}</span>
+                scalpers resell ~{money(view.resale)}
               </span>
             ) : null}
           </div>
