@@ -141,7 +141,7 @@ export function FairnessWalkthrough() {
         tone: "ok",
         text: c.multiRegion
           ? `us-east-1 = us-east-2 verified · ${c.writeMs + c.readMs}ms, no lag`
-          : `consistency check passed · ${c.writeMs + c.readMs}ms (single-region, local dev)`,
+          : `consistency check passed · ${c.writeMs + c.readMs}ms (single-region)`,
       });
       setNo({
         stock: d.units,

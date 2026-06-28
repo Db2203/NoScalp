@@ -7,6 +7,7 @@ import {
   entryId,
   identityHash as hashContact,
   identityIdFor,
+  newId,
   orderIdFor,
   slotId,
 } from "./ids";
@@ -145,8 +146,10 @@ export async function floodBots(args: {
   if (!status) throw new EngineError("not_found", "drop not found");
   if (status !== "registration_open") throw new EngineError("closed", "registration is not open for this drop");
 
+  // fresh per call so each demo run draws a different set of winners
+  const nonce = newId();
   const hashes = Array.from({ length: distinct }, (_, i) =>
-    hashContact(`bot-${args.dropId.slice(0, 8)}-${i}@flood.noscalp`),
+    hashContact(`bot-${args.dropId.slice(0, 8)}-${nonce}-${i}@flood.noscalp`),
   );
 
   let inserted = 0;
@@ -194,8 +197,10 @@ export async function seedHumans(args: {
   if (!status) throw new EngineError("not_found", "drop not found");
   if (status !== "registration_open") throw new EngineError("closed", "registration is not open for this drop");
 
+  // fresh per call so each demo run has a different pool of fans (different winners)
+  const nonce = newId();
   const hashes = Array.from({ length: count }, (_, i) =>
-    hashContact(`fan-${args.dropId.slice(0, 8)}-${i}@fans.noscalp`),
+    hashContact(`fan-${args.dropId.slice(0, 8)}-${nonce}-${i}@fans.noscalp`),
   );
 
   let inserted = 0;
