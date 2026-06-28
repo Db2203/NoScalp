@@ -267,14 +267,14 @@ export function FairnessWalkthrough() {
           <div className="mt-3 flex items-center gap-2 text-xs text-mute">
             <span className={cn("size-2 rounded-full", no && !no.multiRegion ? "bg-mute/40" : "bg-ok")} />
             {!no ? (
-              "us-east-1 = us-east-2 · strongly consistent"
+              "Amazon Aurora DSQL · strongly consistent"
             ) : no.multiRegion ? (
               <>
                 us-east-1 = us-east-2 <span className="text-ok">· in sync ({no.ms}ms)</span>
               </>
             ) : (
               <>
-                single region · local dev <span className="text-mute/70">({no.ms}ms, multi-region proven on deploy)</span>
+                us-east-1 · single region <span className="text-mute/70">({no.ms}ms)</span>
               </>
             )}
           </div>
