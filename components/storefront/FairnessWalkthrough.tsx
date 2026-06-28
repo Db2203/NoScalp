@@ -46,7 +46,7 @@ export function FairnessWalkthrough() {
   const [naive, setNaive] = useState<Naive | null>(null);
   const [no, setNo] = useState<NoScalp | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
-  const [adminToken, setAdminToken] = useState("");
+  const [operator, setOperator] = useState(false);
 
   // The live drop log: every event flows through one queue, revealed at a steady
   // cadence so milestones and per-unit allocations stream like a log being written.
@@ -54,7 +54,10 @@ export function FairnessWalkthrough() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    const t = setTimeout(() => setAdminToken(localStorage.getItem("noscalp_admin_token") ?? ""), 0);
+    const t = setTimeout(
+      () => setOperator(process.env.NODE_ENV !== "production" || !!localStorage.getItem("noscalp_admin_token")),
+      0,
+    );
     return () => clearTimeout(t);
   }, []);
   useEffect(() => () => stopTimer(), []);
@@ -85,7 +88,8 @@ export function FairnessWalkthrough() {
   }
 
   async function run(attempts: number) {
-    const headers = adminToken ? { "x-admin-token": adminToken } : undefined;
+    const token = localStorage.getItem("noscalp_admin_token");
+    const headers = token ? { "x-admin-token": token } : undefined;
     setBusy(true);
     setDemand(attempts);
     setNaive(null);
@@ -180,6 +184,7 @@ export function FairnessWalkthrough() {
             the exact same stampede.
           </p>
         </div>
+        {operator && (
         <div className="flex flex-col items-start gap-3 sm:items-end">
           <div className="flex items-center gap-2">
             <span className="text-xs uppercase tracking-[0.16em] text-mute">Stampede size</span>
@@ -209,8 +214,18 @@ export function FairnessWalkthrough() {
             </Button>
           </div>
         </div>
+        )}
       </div>
 
+      {!operator && (
+        <p className="mt-8 max-w-2xl text-sm leading-relaxed text-mute">
+          This live demo runs during presentations. You can still verify the most recent draw yourself in the panel
+          below: recompute it in your own browser and confirm it wasn&apos;t rigged.
+        </p>
+      )}
+
+      {operator && (
+        <>
       <div className="mt-9 grid gap-5 lg:grid-cols-2">
         {/* normal store */}
         <Panel
@@ -290,6 +305,8 @@ export function FairnessWalkthrough() {
 
       {/* live drop log */}
       <Ticker events={events} busy={busy} />
+        </>
+      )}
 
       {/* why Aurora DSQL */}
       <div className="mt-12">
@@ -325,19 +342,6 @@ export function FairnessWalkthrough() {
       </div>
 
       <DrawVerifier />
-
-      <div className="mt-10">
-        <label className="text-xs text-mute">admin token (only if deployed with NOSCALP_ADMIN_TOKEN)</label>
-        <input
-          value={adminToken}
-          onChange={(e) => {
-            setAdminToken(e.target.value);
-            localStorage.setItem("noscalp_admin_token", e.target.value);
-          }}
-          placeholder="x-admin-token"
-          className="mono mt-1 block w-full max-w-xs rounded-xl border border-edge bg-card px-3 py-2 text-sm outline-none focus:border-accent"
-        />
-      </div>
     </Container>
   );
 }

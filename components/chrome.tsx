@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Container, Wordmark, cn } from "./storefront/ui";
 import { useWishlist } from "./storefront/useWishlist";
 
@@ -139,12 +139,38 @@ const footerCols: { title: string; links: [string, string][] }[] = [
 ];
 
 export function Footer() {
+  const [gate, setGate] = useState(false);
+  const [tok, setTok] = useState("");
+  const clicks = useRef<number[]>([]);
+
+  // Secret operator unlock: triple-click the footer wordmark.
+  function tapLogo() {
+    const now = Date.now();
+    clicks.current = [...clicks.current, now].filter((t) => now - t < 1500);
+    if (clicks.current.length >= 3) {
+      clicks.current = [];
+      setTok(localStorage.getItem("noscalp_admin_token") ?? "");
+      setGate(true);
+    }
+  }
+  function unlock() {
+    if (tok.trim()) localStorage.setItem("noscalp_admin_token", tok.trim());
+    else localStorage.removeItem("noscalp_admin_token");
+    window.location.reload();
+  }
+  function exitOperator() {
+    localStorage.removeItem("noscalp_admin_token");
+    window.location.reload();
+  }
+
   return (
     <footer className="mt-24 border-t border-edge bg-soft/60">
       <Container className="py-14">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
           <div>
-            <Wordmark />
+            <button type="button" onClick={tapLogo} aria-label="NoScalp" className="block cursor-default">
+              <Wordmark />
+            </button>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-mute">
               Limited drops, minus the bots. Pick what you want, enter the draw, check the result
               yourself.
@@ -172,6 +198,40 @@ export function Footer() {
           </Link>
         </div>
       </Container>
+
+      {gate && (
+        <div
+          className="fixed inset-0 z-[60] grid place-items-center bg-black/60 p-4"
+          onClick={() => setGate(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl border border-edge bg-card p-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-sm font-semibold text-fg">Operator access</div>
+            <p className="mt-1 text-xs text-mute">Enter the admin token to unlock demo controls.</p>
+            <input
+              type="password"
+              value={tok}
+              onChange={(e) => setTok(e.target.value)}
+              placeholder="admin token"
+              autoFocus
+              className="mono mt-3 w-full rounded-xl border border-edge bg-canvas px-3 py-2 text-sm outline-none focus:border-accent"
+            />
+            <div className="mt-3 flex gap-2">
+              <button onClick={unlock} className="flex-1 rounded-full bg-fg px-4 py-2 text-sm font-medium text-canvas">
+                Unlock
+              </button>
+              <button
+                onClick={exitOperator}
+                className="rounded-full border border-edge px-4 py-2 text-sm text-mute transition-colors hover:bg-soft"
+              >
+                Exit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </footer>
   );
 }
