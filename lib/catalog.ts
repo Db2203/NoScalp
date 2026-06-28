@@ -15,6 +15,7 @@ export type DropView = {
   tagline: string;
   specs: Spec[];
   status: string;
+  openAt: string;
   closeAt: string;
   stock: number;
 };
@@ -46,6 +47,7 @@ export function toView(d: DropRow): DropView {
     tagline: m.tagline ?? d.subtitle ?? "",
     specs: m.specs ?? [],
     status: d.status,
+    openAt: d.register_open_at,
     closeAt: d.register_close_at,
     stock: d.total_stock,
   };
@@ -59,7 +61,7 @@ export function statusChip(status: string): { tone: "live" | "upcoming" | "close
 
 export const CATEGORIES = [
   { label: "Sneakers", key: "Sneakers", blurb: "Pairs, not bot fodder." },
-  { label: "Consoles", key: "Consoles", blurb: "Actually in stock." },
   { label: "Tickets", key: "Tickets", blurb: "Face value, no scalpers." },
-  { label: "Tech", key: "Tech", blurb: "GPUs and gear, fairly." },
+  { label: "Tech", key: "Tech", blurb: "Gear, fairly drawn." },
+  { label: "Apparel", key: "Apparel", blurb: "Drops, one per person." },
 ];

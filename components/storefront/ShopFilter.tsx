@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { cn } from "./ui";
 
-const CATS = ["All", "Sneakers", "Consoles", "Tickets", "Tech", "Collectibles"];
+const CATS = ["All", "Tickets", "Sneakers", "Tech", "Apparel", "Accessories", "Watches"];
 
 export function ShopFilter() {
   const router = useRouter();

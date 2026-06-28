@@ -138,7 +138,7 @@ export function DropExperience({ dropId }: { dropId: string }) {
       });
       await refreshStatus(identity);
       if (again) {
-        flashToast(r.created ? "Entered." : "You're already in — one entry per person.");
+        flashToast(r.created ? "Entered." : "You're already in. One entry per person.");
       } else if (!stampShown.current) {
         stampShown.current = true;
         setStamp(true);
@@ -146,6 +146,8 @@ export function DropExperience({ dropId }: { dropId: string }) {
       }
     } catch (e) {
       setError((e as Error).message);
+      // the drop may have just closed or drawn — resync so the UI reflects it
+      jget<DropRow>(`/api/drop?id=${dropId}`).then(setDropRow).catch(() => {});
     } finally {
       setBusy(null);
     }
@@ -177,6 +179,8 @@ export function DropExperience({ dropId }: { dropId: string }) {
   const view = dropRow ? toView(dropRow) : null;
   const chip = statusChip(view?.status ?? "");
   const isOpen = view?.status === "registration_open";
+  const isUpcoming = view?.status === "upcoming";
+  const isDrawn = view?.status === "drawing" || view?.status === "drawn";
   const heroImg = view?.images[imgIdx] ?? view?.image ?? null;
 
   if (notFound) {
@@ -257,7 +261,7 @@ export function DropExperience({ dropId }: { dropId: string }) {
           )}
 
           <div className="mt-6 rounded-2xl border border-edge bg-card p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-            {!identity && (
+            {isOpen && !identity && (
               <div className="space-y-3">
                 <div className="text-sm font-medium">Quick check you&apos;re human</div>
                 <p className="text-sm leading-relaxed text-mute">
@@ -305,7 +309,7 @@ export function DropExperience({ dropId }: { dropId: string }) {
                   </div>
                 )}
 
-                {status?.entryStatus === "registered" && (
+                {isOpen && status?.entryStatus === "registered" && (
                   <div className="space-y-3">
                     <div className="rounded-xl border border-ok/25 bg-ok/[0.06] p-4">
                       <div className="font-medium text-ok">You&apos;re in the draw 🎟️</div>
@@ -332,7 +336,7 @@ export function DropExperience({ dropId }: { dropId: string }) {
                       )}
                     </p>
                     <Button onClick={claim} disabled={busy === "claim"} className="w-full" size="lg">
-                      {busy === "claim" ? "Checking out…" : `Check out — ${money(view?.price ?? 0)}`}
+                      {busy === "claim" ? "Checking out…" : `Check out · ${money(view?.price ?? 0)}`}
                     </Button>
                   </div>
                 )}
@@ -363,8 +367,36 @@ export function DropExperience({ dropId }: { dropId: string }) {
                   </div>
                 )}
 
-                {!isOpen && !status && <p className="text-sm text-mute">Registration is closed for this drop.</p>}
               </div>
+            )}
+
+            {/* phase messages (shown whether or not you are verified) */}
+            {isUpcoming && (
+              <p className="text-sm leading-relaxed text-mute">
+                This drop isn&apos;t open yet.{" "}
+                {view?.openAt ? (
+                  <>
+                    Registration opens in <Countdown to={view.openAt} />.
+                  </>
+                ) : (
+                  "Check back when it goes live."
+                )}{" "}
+                Entering early never helps.
+              </p>
+            )}
+            {isDrawn && (!status || status.entryStatus === "registered") && (
+              <div className="rounded-xl border border-edge bg-soft/60 p-4">
+                <div className="font-medium">Winners have been drawn</div>
+                <p className="mt-1 text-sm leading-relaxed text-mute">
+                  Registration closed and {num(stats?.won ?? 0)} winners were drawn at random.{" "}
+                  <Link href="/fairness" className="text-accent hover:underline">
+                    See how this draw was decided →
+                  </Link>
+                </p>
+              </div>
+            )}
+            {!isOpen && !isUpcoming && !isDrawn && (
+              <p className="text-sm text-mute">Registration is closed for this drop.</p>
             )}
 
             {error && <p className="mt-3 text-sm text-warn">{error}</p>}
@@ -381,7 +413,7 @@ export function DropExperience({ dropId }: { dropId: string }) {
             <h2 className="display text-2xl font-bold tracking-tight">About this drop</h2>
             <p className="mt-4 max-w-xl leading-relaxed text-mute">
               {view.tagline ||
-                "A limited release, allocated fairly. Enter the draw for a real shot at retail price — no bots, no scalpers, no carts gone in seconds."}
+                "A limited release, allocated fairly. Enter the draw for a real shot at retail price. No bots, no scalpers, no carts gone in seconds."}
             </p>
           </div>
           {view.specs.length > 0 && (

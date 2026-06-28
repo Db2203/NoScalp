@@ -12,7 +12,7 @@ const STORE_KEY = "noscalp:identity";
 
 function statusOf(e: MyEntry): { tone: "live" | "upcoming" | "closed"; label: string } {
   if (e.allocState === "claimed") return { tone: "live", label: "Secured ✓" };
-  if (e.entryStatus === "won") return { tone: "live", label: "Won — claim now" };
+  if (e.entryStatus === "won") return { tone: "live", label: "Won · claim now" };
   if (e.entryStatus === "lost") return { tone: "closed", label: "Not selected" };
   return { tone: "upcoming", label: "In the draw" };
 }
@@ -74,7 +74,7 @@ export function AccountView() {
         <div className="mt-8 max-w-md rounded-2xl border border-edge bg-card p-6">
           <div className="font-medium">Verify to track your entries</div>
           <p className="mt-1 text-sm leading-relaxed text-mute">
-            One verified person, one account. Enter the email you use for drops — for this demo it
+            One verified person, one account. Enter the email you use for drops; for this demo it
             auto-verifies.
           </p>
           <input

@@ -48,7 +48,7 @@ Then:
 
 ```bash
 npm run db:migrate    # creates tables + async indexes
-npm run db:seed       # seeds the demo PS5 drop
+npm run db:seed       # seeds the demo concert-ticket drop
 npm run test:engine   # optional: prove the guarantees
 npm run dev
 ```

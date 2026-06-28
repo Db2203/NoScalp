@@ -1,5 +1,5 @@
 /**
- * Reset + seed the demo drop (a PS5 restock).
+ * Reset + seed the demo drop (a concert-ticket drop).
  *
  *   npm run db:seed
  */

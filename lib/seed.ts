@@ -1,4 +1,5 @@
 import { pool } from "./db/pools";
+import { seedCommitment } from "./ids";
 import { DEMO_BRAND_ID, DEMO_DROP_ID } from "./constants";
 
 export { DEMO_BRAND_ID, DEMO_DROP_ID };
@@ -20,30 +21,31 @@ type SeedDrop = {
 };
 
 // The demo catalog. Display extras (brand/category/images/specs) live in meta_json
-// so no schema/query changes are needed.
+// so no schema/query changes are needed. The featured drop (DEMO_DROP_ID) is the
+// one the /fairness demo runs against.
 export const CATALOG: SeedDrop[] = [
   {
     id: DEMO_DROP_ID,
-    title: "PlayStation 5 — Restock Drop",
-    brand: "PlayStation",
-    category: "Consoles",
-    tagline: "Five years on and still a pain to buy at retail. Not here.",
-    image: "/drops/ps5.jpg",
-    price_cents: 49999,
-    retail_cents: 49999,
-    resale_cents: 89900,
+    title: "Lumina World Tour, Night 1",
+    brand: "Lumina Live",
+    category: "Tickets",
+    tagline: "Floor tickets at face value, drawn at random. No queue, no $400 resale.",
+    image: "/drops/tickets.jpg",
+    price_cents: 12500,
+    retail_cents: 12500,
+    resale_cents: 48000,
     stock: 100,
-    per_user_limit: 1,
+    per_user_limit: 2,
     status: "registration_open",
     specs: [
-      { k: "Edition", v: "Disc · 1TB" },
-      { k: "Retail", v: "$499.99" },
-      { k: "Allocation", v: "1 per person" },
+      { k: "Section", v: "GA Floor" },
+      { k: "Limit", v: "2 per person" },
+      { k: "Face value", v: "$125" },
     ],
   },
   {
     id: "33333333-3333-4333-8333-333333333333",
-    title: "Retro High 'Cobalt'",
+    title: "Court Low 'Onyx'",
     brand: "Studio 23",
     category: "Sneakers",
     tagline: "These usually vanish in seconds to resale bots. Not this time.",
@@ -55,54 +57,54 @@ export const CATALOG: SeedDrop[] = [
     per_user_limit: 1,
     status: "registration_open",
     specs: [
-      { k: "Colorway", v: "Cobalt / Bone" },
+      { k: "Colorway", v: "Onyx / White" },
       { k: "Sizes", v: "US 6–14" },
       { k: "Retail", v: "$190" },
     ],
   },
   {
     id: "44444444-4444-4444-8444-444444444444",
-    title: "Aurora — World Tour, Night 1",
-    brand: "Live Nation-free",
-    category: "Tickets",
-    tagline: "Floor tickets at face value, drawn at random. No queue, no $400 resale.",
-    image: "/drops/tickets.jpg",
-    price_cents: 12500,
-    retail_cents: 12500,
-    resale_cents: 48000,
-    stock: 120,
-    per_user_limit: 2,
+    title: "Aero75 Mechanical Keyboard",
+    brand: "Keypath",
+    category: "Tech",
+    tagline: "Artisan keebs vanish in group-buy seconds to flippers. Not here.",
+    image: "/drops/keyboard.jpg",
+    price_cents: 22000,
+    retail_cents: 22000,
+    resale_cents: 58000,
+    stock: 90,
+    per_user_limit: 1,
     status: "registration_open",
     specs: [
-      { k: "Section", v: "GA Floor" },
-      { k: "Limit", v: "2 per person" },
-      { k: "Face value", v: "$125" },
+      { k: "Layout", v: "75% hot-swap" },
+      { k: "Switches", v: "Tactile" },
+      { k: "Retail", v: "$220" },
     ],
   },
   {
     id: "55555555-5555-4555-8555-555555555555",
-    title: "RTX 5090 — Founders Drop",
-    brand: "NV-class",
+    title: "Halo Wireless Headphones",
+    brand: "Resonant",
     category: "Tech",
-    tagline: "Flagship cards get swept by bot rigs on launch. Speed won't help you here.",
-    image: "/drops/gpu.jpg",
-    price_cents: 199900,
-    retail_cents: 199900,
-    resale_cents: 320000,
-    stock: 60,
+    tagline: "Limited colorways get swept by bot rigs on launch. Speed won't help you here.",
+    image: "/drops/headphones.jpg",
+    price_cents: 34900,
+    retail_cents: 34900,
+    resale_cents: 72000,
+    stock: 120,
     per_user_limit: 1,
     status: "registration_open",
     specs: [
-      { k: "Memory", v: "32GB GDDR7" },
-      { k: "Edition", v: "Founders" },
-      { k: "Retail", v: "$1,999" },
+      { k: "Type", v: "Over-ear ANC" },
+      { k: "Battery", v: "40 hrs" },
+      { k: "Retail", v: "$349" },
     ],
   },
   {
     id: "66666666-6666-4666-8666-666666666666",
-    title: "Chrono Diver 'Midnight'",
+    title: "Heritage Chronograph 'Moonphase'",
     brand: "Meridian",
-    category: "Tech",
+    category: "Watches",
     tagline: "300 pieces, opens Friday. Register now for a fair shot.",
     image: "/drops/watch.jpg",
     price_cents: 78000,
@@ -119,21 +121,40 @@ export const CATALOG: SeedDrop[] = [
   },
   {
     id: "77777777-7777-4777-8777-777777777777",
-    title: "Designer Figure 'Macaron'",
-    brand: "Pop Lab",
-    category: "Collectibles",
-    tagline: "Resellers hoard these by the case. One per person here.",
-    image: "/drops/figure.jpg",
-    price_cents: 8500,
-    retail_cents: 8500,
-    resale_cents: 26000,
+    title: "Heavyweight Hoodie 'Dune'",
+    brand: "Off-Season",
+    category: "Apparel",
+    tagline: "Streetwear drops sell out in seconds to resale bots. One per person here.",
+    image: "/drops/hoodie.jpg",
+    price_cents: 12000,
+    retail_cents: 12000,
+    resale_cents: 36000,
     stock: 150,
     per_user_limit: 1,
     status: "registration_open",
     specs: [
-      { k: "Series", v: "Macaron" },
-      { k: "Limit", v: "1 per person" },
-      { k: "Retail", v: "$85" },
+      { k: "Fabric", v: "450gsm fleece" },
+      { k: "Fit", v: "Boxy" },
+      { k: "Retail", v: "$120" },
+    ],
+  },
+  {
+    id: "88888888-8888-4888-8888-888888888888",
+    title: "Solstice Shades",
+    brand: "Vela",
+    category: "Accessories",
+    tagline: "Limited eyewear flips for triple online. Random draw, face value.",
+    image: "/drops/sunglasses.jpg",
+    price_cents: 18000,
+    retail_cents: 18000,
+    resale_cents: 45000,
+    stock: 60,
+    per_user_limit: 1,
+    status: "registration_open",
+    specs: [
+      { k: "Lens", v: "Polarized" },
+      { k: "Edition", v: "Limited" },
+      { k: "Retail", v: "$180" },
     ],
   },
 ];
@@ -161,17 +182,17 @@ async function seedOne(d: SeedDrop) {
   await db.query(
     `INSERT INTO drops
        (id, brand_id, title, subtitle, image_url, price_cents, total_stock, per_user_limit,
-        register_open_at, register_close_at, draw_at, claim_window_secs, status, draw_seed, meta_json)
+        register_open_at, register_close_at, draw_at, claim_window_secs, status, draw_seed, seed_commitment, meta_json)
      VALUES
        ($1, $2, $3, $4, $5, $6, $7, $8,
-        ${opensExpr}, ${closesExpr}, ${closesExpr}, 600, $9, NULL, $10::jsonb)
+        ${opensExpr}, ${closesExpr}, ${closesExpr}, 600, $9, NULL, $10, $11::jsonb)
      ON CONFLICT (id) DO UPDATE SET
         title = EXCLUDED.title, subtitle = EXCLUDED.subtitle, image_url = EXCLUDED.image_url,
         price_cents = EXCLUDED.price_cents, total_stock = EXCLUDED.total_stock,
         per_user_limit = EXCLUDED.per_user_limit, register_open_at = ${opensExpr},
         register_close_at = ${closesExpr}, draw_at = ${closesExpr}, status = EXCLUDED.status,
-        draw_seed = NULL, meta_json = EXCLUDED.meta_json`,
-    [d.id, DEMO_BRAND_ID, d.title, d.tagline, d.image, d.price_cents, d.stock, d.per_user_limit, d.status, JSON.stringify(meta)],
+        draw_seed = NULL, seed_commitment = EXCLUDED.seed_commitment, meta_json = EXCLUDED.meta_json`,
+    [d.id, DEMO_BRAND_ID, d.title, d.tagline, d.image, d.price_cents, d.stock, d.per_user_limit, d.status, seedCommitment(d.id), JSON.stringify(meta)],
   );
 
   const values: string[] = [];

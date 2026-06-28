@@ -7,17 +7,17 @@ import { useWishlist } from "./storefront/useWishlist";
 
 const categories = [
   { label: "Sneakers", href: "/shop?category=Sneakers" },
-  { label: "Consoles", href: "/shop?category=Consoles" },
   { label: "Tickets", href: "/shop?category=Tickets" },
   { label: "Tech", href: "/shop?category=Tech" },
+  { label: "Apparel", href: "/shop?category=Apparel" },
 ];
 
 const marquee = [
-  "PS5 Restock — Live",
-  "Cobalt Retro High",
-  "Aurora World Tour",
-  "RTX 5090 Founders",
-  "Chrono Diver — Friday",
+  "Lumina World Tour · Live",
+  "Court Low 'Onyx'",
+  "Aero75 Keyboard",
+  "Halo Headphones",
+  "Heritage Chronograph · Friday",
   "One entry per human",
 ];
 
@@ -109,7 +109,7 @@ const footerCols: { title: string; links: [string, string][] }[] = [
     links: [
       ["All drops", "/shop"],
       ["Sneakers", "/shop?category=Sneakers"],
-      ["Consoles", "/shop?category=Consoles"],
+      ["Apparel", "/shop?category=Apparel"],
       ["Tickets", "/shop?category=Tickets"],
       ["Tech", "/shop?category=Tech"],
     ],
@@ -168,7 +168,7 @@ export function Footer() {
         <div className="mt-12 flex flex-col gap-3 border-t border-edge pt-6 text-xs text-mute sm:flex-row sm:items-center sm:justify-between">
           <span>© 2026 NoScalp. Drops, decided fairly.</span>
           <Link href="/fairness" className="transition-colors hover:text-fg">
-            Built on Amazon Aurora DSQL — see how it stays fair →
+            Built on Amazon Aurora DSQL · see how it stays fair →
           </Link>
         </div>
       </Container>
