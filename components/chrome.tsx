@@ -131,8 +131,8 @@ const footerCols: { title: string; links: [string, string][] }[] = [
   {
     title: "Legal",
     links: [
-      ["Terms", "/"],
-      ["Privacy", "/"],
+      ["Terms", "/terms"],
+      ["Privacy", "/privacy"],
       ["Fairness", "/fairness"],
     ],
   },

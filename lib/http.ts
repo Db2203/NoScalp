@@ -18,6 +18,11 @@ export function handleError(err: unknown) {
       { not_found: 404, closed: 409, expired: 410, limit: 409, bad_request: 400, unauthorized: 401 }[err.code] ?? 400;
     return fail(err.code, err.message, status);
   }
+  // A malformed id (e.g. not a valid UUID) surfaces as Postgres 22P02 — that's a
+  // client mistake, not a server fault, so return 400 instead of 500.
+  if ((err as { code?: string } | null)?.code === "22P02") {
+    return fail("bad_request", "invalid id", 400);
+  }
   // Log the detail server-side, but never leak internal/DB error text to clients.
   console.error(err);
   return fail("internal", "internal error", 500);

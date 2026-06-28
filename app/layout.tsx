@@ -19,9 +19,23 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://no-scalp.vercel.app"),
   title: "NoScalp · Drops decided fairly",
   description:
     "Limited drops, minus the bots. Every release is a random draw: one entry per real person, winners picked fairly, never oversold.",
+  openGraph: {
+    title: "NoScalp · Drops decided fairly",
+    description:
+      "A provably-fair drops platform on Amazon Aurora DSQL. One entry per real person, winners drawn at random, never oversold.",
+    siteName: "NoScalp",
+    type: "website",
+    url: "https://no-scalp.vercel.app",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NoScalp · Drops decided fairly",
+    description: "A provably-fair drops platform on Amazon Aurora DSQL. Won by fans, not bots.",
+  },
 };
 
 export default function RootLayout({
