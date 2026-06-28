@@ -33,8 +33,8 @@ type Identity = { identityId: string; identityHash: string; contact: string; dis
 
 const STORE_KEY = "noscalp:identity";
 
-export function DropExperience({ dropId }: { dropId: string }) {
-  const [dropRow, setDropRow] = useState<DropRow | null>(null);
+export function DropExperience({ dropId, initialDrop = null }: { dropId: string; initialDrop?: DropRow | null }) {
+  const [dropRow, setDropRow] = useState<DropRow | null>(initialDrop);
   const [stats, setStats] = useState<Stats | null>(null);
   const [status, setStatus] = useState<Status>(null);
   const [identity, setIdentity] = useState<Identity | null>(null);

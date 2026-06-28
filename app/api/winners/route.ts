@@ -9,7 +9,7 @@ export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
     const dropId = url.searchParams.get("id") ?? url.searchParams.get("dropId");
-    if (!dropId) return fail("bad_request", "dropId required");
+    if (!dropId) return fail("bad_request", "id required");
     const winners = await getWinners(dropId, regionOf(url.searchParams.get("region")));
     return ok({ winners });
   } catch (e) {

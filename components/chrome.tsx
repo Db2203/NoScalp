@@ -17,7 +17,7 @@ const marquee = [
   "Court Low 'Onyx'",
   "Aero75 Keyboard",
   "Halo Headphones",
-  "Heritage Chronograph · Friday",
+  "Heritage Chronograph · Upcoming",
   "One entry per human",
 ];
 
