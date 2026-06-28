@@ -1,4 +1,4 @@
-import { createHmac } from "node:crypto";
+import { createHmac, createHash } from "node:crypto";
 import { v4 as uuidv4, v5 as uuidv5 } from "uuid";
 
 /**
@@ -45,6 +45,28 @@ export function allocationIdFor(dropId: string, unitNo: number): string {
 }
 
 export const newId = uuidv4;
+
+/**
+ * Provably-fair draw seed (commit-reveal).
+ *
+ * The server seed is derived deterministically from a secret + the drop id, so
+ * we never store it — yet we can publish its *commitment* (sha256) when the drop
+ * is created and *reveal* the seed at draw time. Anyone can then check
+ * sha256(revealed seed) == published commitment, which proves the seed was fixed
+ * in advance: the operator can't see who entered and then grind a seed that
+ * favors anyone. Winners are md5(entry_id || seed), so the seed fully determines
+ * the result and the whole draw is reproducible by hand.
+ */
+export function committedSeed(dropId: string): string {
+  const secret =
+    process.env.NOSCALP_SEED_SECRET || process.env.NOSCALP_IDENTITY_SECRET || "dev-only-insecure-secret";
+  return createHmac("sha256", secret).update(`seed:${dropId}`).digest("hex");
+}
+
+/** Public commitment to a drop's seed — published before the draw, hashes the secret seed. */
+export function seedCommitment(dropId: string): string {
+  return createHash("sha256").update(committedSeed(dropId)).digest("hex");
+}
 
 /**
  * Identity hash = HMAC(secret, normalized contact). We never store the raw

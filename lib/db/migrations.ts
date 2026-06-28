@@ -39,10 +39,16 @@ export function ddlStatements(): { name: string; sql: string }[] {
         draw_at            TIMESTAMPTZ NOT NULL,
         claim_window_secs  INT NOT NULL DEFAULT 600,
         status             TEXT NOT NULL DEFAULT 'registration_open',
-        draw_seed          TEXT,
+        draw_seed          TEXT,                      -- revealed at draw time
+        seed_commitment    TEXT,                      -- sha256(seed), published at creation
         meta_json          JSONB NOT NULL DEFAULT '{}'::jsonb,
         created_at         TIMESTAMPTZ NOT NULL DEFAULT now()
       )`,
+    },
+    {
+      // for DBs created before commit-reveal was added (no-op on fresh ones)
+      name: "drops_seed_commitment",
+      sql: `ALTER TABLE drops ADD COLUMN IF NOT EXISTS seed_commitment TEXT`,
     },
     {
       // one row per physical unit — this is what spreads allocation writes so

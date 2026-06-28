@@ -3,10 +3,10 @@ import { pool, type RegionKey } from "./db/pools";
 import { withTxn } from "./db/withRetry";
 import {
   allocationIdFor,
+  committedSeed,
   entryId,
   identityHash as hashContact,
   identityIdFor,
-  newId,
   orderIdFor,
   slotId,
 } from "./ids";
@@ -254,7 +254,9 @@ export async function runDraw(args: {
 }): Promise<{ winners: number; units: number; entries: number; seed: string; alreadyDrawn: boolean }> {
   const region = args.region ?? "A";
   const db = pool(region);
-  const newSeed = newId();
+  // Reveal the seed committed when the drop was created (commit-reveal). It's
+  // derived from a secret, so it was fixed in advance but only disclosed now.
+  const newSeed = committedSeed(args.dropId);
 
   // 1. LEADER GATE. Only the transaction that actually flips
   //    registration_open -> drawing performs the draw. A concurrent call (double

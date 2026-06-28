@@ -16,6 +16,7 @@ export type DropRow = {
   claim_window_secs: number;
   status: string;
   draw_seed: string | null;
+  seed_commitment: string | null;
 };
 
 export async function listDrops(region: RegionKey = "A"): Promise<DropRow[]> {
@@ -92,6 +93,36 @@ export async function getDropStats(dropId: string, region: RegionKey = "A"): Pro
     lost: e.lost,
     registered: e.registered,
     units: { total: u.total, available: u.available, allocated: u.allocated, claimed: u.claimed },
+  };
+}
+
+export type DrawProof = {
+  commitment: string | null;
+  seed: string | null;
+  unitCount: number;
+  entries: { id: string; won: boolean }[];
+};
+
+/**
+ * Everything needed to reproduce a draw by hand: the published commitment, the
+ * revealed seed, how many units there were, and every entry id with whether it
+ * won. A verifier recomputes md5(id||seed) for all entries, sorts, takes the top
+ * `unitCount`, and confirms that set equals the winners — and that
+ * sha256(seed) == commitment.
+ */
+export async function getDrawProof(dropId: string, region: RegionKey = "A"): Promise<DrawProof> {
+  const db = pool(region);
+  const [drop, units, entries] = await Promise.all([
+    db.query(`SELECT draw_seed, seed_commitment FROM drops WHERE id = $1`, [dropId]),
+    db.query(`SELECT count(*)::int AS n FROM drop_units WHERE drop_id = $1`, [dropId]),
+    db.query(`SELECT id, status FROM entries WHERE drop_id = $1`, [dropId]),
+  ]);
+  const d = drop.rows[0] as { draw_seed: string | null; seed_commitment: string | null } | undefined;
+  return {
+    commitment: d?.seed_commitment ?? null,
+    seed: d?.draw_seed ?? null,
+    unitCount: units.rows[0]?.n ?? 0,
+    entries: entries.rows.map((r) => ({ id: r.id, won: r.status === "won" })),
   };
 }
 

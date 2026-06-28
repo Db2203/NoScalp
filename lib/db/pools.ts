@@ -103,6 +103,18 @@ export function pool(region: RegionKey = "A"): Pool {
 }
 
 /**
+ * True only when we're genuinely talking to two *distinct* DSQL regional
+ * endpoints — so the cross-region consistency claim is real. In local mode (or
+ * single-region DSQL) this is false and the UI says so instead of overclaiming.
+ */
+export function isMultiRegion(): boolean {
+  if (dbMode() !== "dsql") return false;
+  const a = process.env.DSQL_ENDPOINT_A;
+  const b = process.env.DSQL_ENDPOINT_B;
+  return !!a && !!b && a !== b;
+}
+
+/**
  * A wider pool used only by the demo's "normal store" race (region A). The
  * regular pools cap connections at 8; to show a genuine read-then-write
  * stampede we need real concurrency, so this one allows more in flight.

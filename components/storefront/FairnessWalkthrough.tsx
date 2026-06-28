@@ -6,8 +6,9 @@ import { CountUp } from "./CountUp";
 import { jget, jpost } from "@/lib/client";
 import { shortHash } from "@/lib/format";
 import { DEMO_DROP_ID } from "@/lib/constants";
+import { DrawVerifier } from "./DrawVerifier";
 
-const PRICE_CENTS = 49999; // PS5 — used to price the naive store's refunds
+const PRICE_CENTS = 12500; // ticket face value — used to price the naive store's refunds
 const FANS = 9000; // real verified fans seeded into the pool
 const BOT_ACCOUNTS = 60; // fake accounts behind the scalper rig
 
@@ -26,6 +27,7 @@ type NoScalp = {
   requests: number;
   botTickets: number;
   sync: boolean;
+  multiRegion: boolean;
   ms: number;
   seed: string | null;
 };
@@ -127,11 +129,16 @@ export function FairnessWalkthrough() {
       enqueue({ tone: "ok", text: `${d.winners} units allocated · 0 oversold` });
 
       const s = await jget<{ wonHumans: number; wonBots: number; bots: number }>(`/api/stats?dropId=${dropId}`);
-      const c = await jget<{ writeMs: number; readMs: number; consistent: boolean }>(
+      const c = await jget<{ writeMs: number; readMs: number; consistent: boolean; multiRegion: boolean }>(
         `/api/consistency?dropId=${dropId}`,
         headers,
       );
-      enqueue({ tone: "ok", text: `us-east-1 = us-east-2 verified · ${c.writeMs + c.readMs}ms, no lag` });
+      enqueue({
+        tone: "ok",
+        text: c.multiRegion
+          ? `us-east-1 = us-east-2 verified · ${c.writeMs + c.readMs}ms, no lag`
+          : `consistency check passed · ${c.writeMs + c.readMs}ms (single-region, local dev)`,
+      });
       setNo({
         stock: d.units,
         winners: d.winners,
@@ -140,6 +147,7 @@ export function FairnessWalkthrough() {
         requests: f.attempts,
         botTickets: s.bots,
         sync: c.consistent,
+        multiRegion: c.multiRegion,
         ms: c.writeMs + c.readMs,
         seed: drop.draw_seed,
       });
@@ -167,7 +175,7 @@ export function FairnessWalkthrough() {
             The same drop, two ways.
           </h1>
           <p className="mt-4 max-w-2xl leading-relaxed text-mute">
-            {FANS.toLocaleString()} real fans want a PlayStation 5. So does a scalper rig firing hundreds of thousands
+            {FANS.toLocaleString()} real fans want floor tickets to the Lumina world tour. So does a scalper rig firing hundreds of thousands
             of requests from {BOT_ACCOUNTS} fake accounts. Watch a normal store and NoScalp on Amazon Aurora DSQL take
             the exact same stampede.
           </p>
@@ -221,7 +229,7 @@ export function FairnessWalkthrough() {
           <Bar filled={100} over={naive ? Math.min(naive.oversold, 80) : 0} tone="bad" />
           <Rows
             rows={[
-              { k: "Oversold — buyers paid for nothing", v: naive?.oversold, tone: "bad" },
+              { k: "Oversold (buyers paid for nothing)", v: naive?.oversold, tone: "bad" },
               { k: "Went to real fans", v: naive ? 0 : undefined, tone: "bad", zero: true },
             ]}
           />
@@ -234,7 +242,7 @@ export function FairnessWalkthrough() {
           <Status
             text={
               naive
-                ? "No verification, no per-unit guard — the fastest scripts win the race and the counter oversells."
+                ? "No verification, no per-unit guard. The fastest scripts win the race and the counter oversells."
                 : "Waiting for the drop…"
             }
           />
@@ -257,13 +265,23 @@ export function FairnessWalkthrough() {
             ]}
           />
           <div className="mt-3 flex items-center gap-2 text-xs text-mute">
-            <span className="size-2 rounded-full bg-ok" />
-            us-east-1 = us-east-2 {no ? <span className="text-ok">· in sync ({no.ms}ms)</span> : "· strongly consistent"}
+            <span className={cn("size-2 rounded-full", no && !no.multiRegion ? "bg-mute/40" : "bg-ok")} />
+            {!no ? (
+              "us-east-1 = us-east-2 · strongly consistent"
+            ) : no.multiRegion ? (
+              <>
+                us-east-1 = us-east-2 <span className="text-ok">· in sync ({no.ms}ms)</span>
+              </>
+            ) : (
+              <>
+                single region · local dev <span className="text-mute/70">({no.ms}ms, multi-region proven on deploy)</span>
+              </>
+            )}
           </div>
           <Status
             text={
               no
-                ? `${no.requests.toLocaleString()} bot requests collapsed to ${no.botTickets} tickets — one per identity, so spamming buys nothing.`
+                ? `${no.requests.toLocaleString()} bot requests collapsed to ${no.botTickets} tickets, one per identity, so spamming buys nothing.`
                 : "Waiting for the drop…"
             }
           />
@@ -279,7 +297,7 @@ export function FairnessWalkthrough() {
         <div className="mt-5 grid gap-4 sm:grid-cols-3">
           <DsqlPoint
             title="Exactly-once, no hot counter"
-            body="Every unit is its own row, claimed once. Concurrent claims collide on the key and one retries — so it can't oversell, no matter the spike."
+            body="Every unit is its own row, claimed once. Concurrent claims collide on the key and one retries, so it can't oversell no matter the spike."
           />
           <DsqlPoint
             title="Strongly consistent across regions"
@@ -291,20 +309,22 @@ export function FairnessWalkthrough() {
               no?.seed ? (
                 <>
                   Winners are <span className="font-mono text-fg">md5(entry + seed)</span> ordered by seed{" "}
-                  <span className="font-mono text-fg">{shortHash(no.seed, 10)}</span> — anyone can recompute who won.
+                  <span className="font-mono text-fg">{shortHash(no.seed, 10)}</span>. Anyone can recompute who won.
                 </>
               ) : (
-                "Winners are ranked from a published seed — anyone can recompute the result and check it themselves."
+                "Winners are ranked from a published seed. Anyone can recompute the result and check it themselves."
               )
             }
           />
         </div>
         <p className="mt-6 max-w-3xl text-xs leading-relaxed text-mute">
-          Identity verification is a pluggable provider — mocked here with email OTP; in production it drops in phone
+          Identity verification is a pluggable provider, mocked here with email OTP; in production it drops in phone
           OTP or Stripe Identity. NoScalp owns the part a database judge can trust: fair, oversell-proof,
           globally-consistent allocation under a real stampede.
         </p>
       </div>
+
+      <DrawVerifier />
 
       <div className="mt-10">
         <label className="text-xs text-mute">admin token (only if deployed with NOSCALP_ADMIN_TOKEN)</label>

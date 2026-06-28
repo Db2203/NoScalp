@@ -1,4 +1,4 @@
-import { pool, regionLabels } from "@/lib/db/pools";
+import { pool, regionLabels, isMultiRegion } from "@/lib/db/pools";
 import { getDropStats } from "@/lib/queries";
 import { ok, fail, handleError, requireAdmin } from "@/lib/http";
 
@@ -46,6 +46,7 @@ export async function GET(req: Request) {
       regionA: { label: regionLabels.A, entriesTotal: statsA.entriesTotal },
       regionB: { label: regionLabels.B, entriesTotal: statsB.entriesTotal },
       consistent: foundInB && statsA.entriesTotal === statsB.entriesTotal,
+      multiRegion: isMultiRegion(),
     });
   } catch (e) {
     return handleError(e);
