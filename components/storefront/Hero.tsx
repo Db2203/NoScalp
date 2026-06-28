@@ -52,8 +52,8 @@ export function Hero({ d }: { d: DropView }) {
             </span>
           </h1>
           <motion.p variants={item} className="mt-6 max-w-md text-lg leading-relaxed text-mute">
-            Every drop here is a random draw. Enter once and your odds match everyone else&apos;s.
-            No refreshing, no bots cutting the line.
+            Every drop is a random draw, one entry each. Bots can run a thousand accounts and still
+            won&apos;t out-draw a single real person.
           </motion.p>
           <motion.div variants={item} className="mt-8 flex flex-wrap items-center gap-3">
             <Button href={`/drops/${d.id}`} size="lg">

@@ -97,7 +97,7 @@ export function DrawVerifier() {
       <div className="mt-5 rounded-3xl border border-edge bg-card p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <p className="max-w-xl leading-relaxed text-mute">
-            We publish a <span className="text-fg">commitment</span> to the draw seed when the drop is created, then
+            We publish a <span className="text-fg">commitment</span>{" "}to the draw seed when the drop is created, then
             reveal the seed at draw time. Recompute the whole draw right here in your browser, with no server
             involved, and confirm we couldn&apos;t have rigged it.
           </p>

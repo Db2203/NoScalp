@@ -15,10 +15,11 @@ export function StoryBand() {
             I got tired of losing to bots.
           </h2>
           <p className="mt-5 max-w-md leading-relaxed text-mute">
-            In 2020 I lost six hyped drops in a row to bots. Sneakers, concert tickets, keyboards, same
-            story: gone in seconds, back online an hour later at triple the price. NoScalp is the fix I
-            wanted. A random draw, one entry per real person, where being fast or running fifty accounts
-            gets you nowhere.
+            In 2020 I tried to buy a PS5 multiple times, and a scalper beat me to it every
+            time. Since then, I&apos;ve seen the same thing happen with sneakers, concert tickets,
+            graphics cards, and other limited drops: gone in seconds, then back online an hour later at
+            triple the price. NoScalp is the fix I wanted. A random draw, one entry per real person,
+            where being fast or running fifty accounts gets a scalper nowhere.
           </p>
           <div className="mt-7">
             <Button href="/shop" variant="accent">

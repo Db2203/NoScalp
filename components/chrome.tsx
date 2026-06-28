@@ -172,8 +172,8 @@ export function Footer() {
               <Wordmark />
             </button>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-mute">
-              Limited drops, minus the bots. Pick what you want, enter the draw, check the result
-              yourself.
+              Limited drops, handed out by a random draw. Pick what you want, enter, and check the
+              result yourself.
             </p>
           </div>
           {footerCols.map((col) => (
@@ -192,7 +192,7 @@ export function Footer() {
           ))}
         </div>
         <div className="mt-12 flex flex-col gap-3 border-t border-edge pt-6 text-xs text-mute sm:flex-row sm:items-center sm:justify-between">
-          <span>© 2026 NoScalp. Drops, decided fairly.</span>
+          <span>© 2026 NoScalp. Built because losing to bots got old.</span>
           <Link href="/fairness" className="transition-colors hover:text-fg">
             Built on Amazon Aurora DSQL · see how it stays fair →
           </Link>

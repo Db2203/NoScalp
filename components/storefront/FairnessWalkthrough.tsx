@@ -257,7 +257,7 @@ export function FairnessWalkthrough() {
           <Status
             text={
               naive
-                ? "No verification, no per-unit guard. The fastest scripts win the race and the counter oversells."
+                ? "Nothing checks who you are, and one unit can be sold twice. The fastest script wins and the counter blows past 100."
                 : "Waiting for the drop…"
             }
           />

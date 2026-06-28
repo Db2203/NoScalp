@@ -504,7 +504,7 @@ export function DropExperience({ dropId, initialDrop = null }: { dropId: string;
             <h2 className="display text-2xl font-bold tracking-tight">About this drop</h2>
             <p className="mt-4 max-w-xl leading-relaxed text-mute">
               {view.tagline ||
-                "A limited release, allocated fairly. Enter the draw for a real shot at retail price. No bots, no scalpers, no carts gone in seconds."}
+                "A limited release. Enter the draw and you've got a real shot at it for retail price, instead of losing a checkout race to a bot."}
             </p>
           </div>
           {view.specs.length > 0 && (
