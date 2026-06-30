@@ -14,6 +14,9 @@
   &nbsp;·&nbsp; built for the <b>H0: Hack the Zero Stack</b> hackathon
 </p>
 
+> [!NOTE]
+> **Judges / reviewers — try it with zero setup.** The live demo is fully open (no login, no token). Open **[/fairness](https://no-scalp.vercel.app/fairness)**, pick a stampede size, and hit **Run the drop**: a normal store oversells past 100 while NoScalp holds at **exactly 100** on Aurora DSQL, with a live `us-east-1 = us-east-2` consistency check. Then click **"Reproduce the draw in my browser"** to verify the result yourself. Browsing and entering a drop work from the [homepage](https://no-scalp.vercel.app) too.
+
 ---
 
 Bots win roughly 80% of every hyped drop (concert tickets, sneakers, limited gear) by being faster than humans and by faking thousands of accounts. NoScalp is a drop platform where that doesn't work.
@@ -86,7 +89,7 @@ Seeds a drop and asserts the real guarantees: duplicate humans collapse to one e
 
 - `/` — the storefront
 - `/drops/<id>` — the consumer flow: verify → enter → win → checkout (Stripe test mode)
-- `/fairness` — the proof: the side-by-side stampede, a live drop log, the "why Aurora DSQL" breakdown, and the in-browser draw verifier. The demo controls (run the stampede / draw / reset) unlock in **operator mode** — triple-click the footer wordmark and enter the admin token.
+- `/fairness` — the proof: the side-by-side stampede, a live drop log, the "why Aurora DSQL" breakdown, and the in-browser draw verifier. **During the hackathon judging window the demo controls are open** — just hit **Run the drop** (no setup). *(Outside judging they're gated behind operator mode: triple-click the footer wordmark and enter an admin token.)*
 
 ## Stack
 
