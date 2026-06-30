@@ -55,7 +55,7 @@ export function FairnessWalkthrough() {
 
   useEffect(() => {
     const t = setTimeout(
-      () => setOperator(process.env.NODE_ENV !== "production" || !!localStorage.getItem("noscalp_admin_token")),
+      () => setOperator(process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_OPEN_DEMO === "1" || !!localStorage.getItem("noscalp_admin_token")),
       0,
     );
     return () => clearTimeout(t);

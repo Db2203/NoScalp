@@ -58,7 +58,7 @@ export function DropExperience({ dropId, initialDrop = null }: { dropId: string;
         const raw = localStorage.getItem(STORE_KEY);
         if (raw) setIdentity(JSON.parse(raw));
         // operator (demo) control: visible in dev, or on a deploy only when the admin token is set
-        setOperator(process.env.NODE_ENV !== "production" || !!localStorage.getItem("noscalp_admin_token"));
+        setOperator(process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_OPEN_DEMO === "1" || !!localStorage.getItem("noscalp_admin_token"));
       } catch {}
     }, 0);
     return () => clearTimeout(id);
